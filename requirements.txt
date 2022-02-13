@@ -9,7 +9,7 @@ djangorestframework-jwt==1.11.0
 djangorestframework-simplejwt==5.0.0
 drf-jwt==1.19.2
 jsonfield==3.1.0
-oauthlib==3.1.1s
+oauthlib==3.1.1
 Pillow==8.3.1
 PyJWT==2.3.0
 pyotp==2.6.0
