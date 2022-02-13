@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import django_on_heroku
 
 load_dotenv()
 
@@ -29,7 +30,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -88,8 +89,12 @@ WSGI_APPLICATION = 'pintuappsbe.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('ENGINE'),
+        'NAME': os.getenv('NAME'),
+        'USER': 'ywungefcsjlzdg',
+        'PASSWORD': os.getenv('PASSWORD'),
+        'HOST': os.getenv('HOST'),
+        'PORT': os.getenv('PORT'),
     }
 }
 
@@ -130,7 +135,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
+STATIC_ROOT = '/static/'
+django_on_heroku.settings(locals())
 
 AUTH_USER_MODEL = 'user.User'
 
@@ -174,6 +181,6 @@ JWT_AUTH = {
 
 EMAIL_HOST="smtp.gmail.com"
 EMAIL_PORT=587
-EMAIL_HOST_USER=os.getenv("EMAIL")
-EMAIL_HOST_PASSWORD=os.getenv("PASSWORD")
+EMAIL_HOST_USER=os.getenv("EMAIL_EMAIL")
+EMAIL_HOST_PASSWORD=os.getenv("EMAIL_PASSWORD")
 EMAIL_USE_TLS=True
