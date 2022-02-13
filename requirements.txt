@@ -1,0 +1,24 @@
+<<<<<<< HEAD
+asgiref==3.4.1
+=======
+>>>>>>> 9ae0d27 (Feature/user api)
+dj-rest-auth==2.2.2
+Django==4.0.1
+django-allauth==0.47.0
+django-cors-headers==3.10.1
+django-environ==0.8.1
+djangorestframework==3.13.1
+djangorestframework-jwt==1.11.0
+djangorestframework-simplejwt==5.0.0
+drf-jwt==1.19.2
+jsonfield==3.1.0
+oauthlib==3.1.1s
+Pillow==8.3.1
+PyJWT==2.3.0
+pytz==2021.3
+python-dateutil==2.8.2
+python-dotenv==0.19.2
+requests==2.27.1
+requests-oauthlib==1.3.0
+sqlparse==0.4.2
+virtualenv==20.10.0
