@@ -9,7 +9,7 @@ class Order(models.Model):
     paid = models.BooleanField()
 
     def __str__(self) -> str:
-        return self.id
+        return str(self.id)
 
 class OrderItems(models.Model):
     order_id = models.ForeignKey(Order, on_delete=models.CASCADE)
@@ -19,7 +19,7 @@ class OrderItems(models.Model):
     to_user_id = models.ForeignKey(User, on_delete=models.CASCADE,related_name="to_user_id")
     
     def __str__(self) -> str:
-        return self.id
+        return str(self.id)
 
 
 class OrderCustom(models.Model):
