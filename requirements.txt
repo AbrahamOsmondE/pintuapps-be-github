@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 asgiref==3.4.1
-=======
->>>>>>> 9ae0d27 (Feature/user api)
 dj-rest-auth==2.2.2
 Django==4.0.1
 django-allauth==0.47.0
@@ -22,3 +19,7 @@ requests==2.27.1
 requests-oauthlib==1.3.0
 sqlparse==0.4.2
 virtualenv==20.10.0
+django-on-heroku==1.1.2
+gunicorn==20.1.0
+psycopg2-binary==2.9.3
+whitenoise==5.3.0
