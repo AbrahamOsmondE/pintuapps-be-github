@@ -55,17 +55,19 @@ class UserAPI(APIView):
         return Response(status=status.HTTP_200_OK)
 
 class UsersAPI(APIView):
+    authentication_classes = ()
+    permission_classes = ()
     def get(self,request,*args,**kwargs):
         response={"users":user_get_all()}
         return Response(data=response)
 
 class BuyerAPI(APIView):
-    @buyer_api
+    authentication_classes = ()
+    permission_classes = ()
     def get(self,request,*args,**kwargs):
         google_id = request.GET['google_id']
         return Response(data=get_buyer(google_id=google_id))
 
-    @buyer_api
     def put(self,request,*args,**kwargs):
         data = request.data
         if "google_id" not in data:
@@ -94,7 +96,6 @@ class BuyerAPI(APIView):
         new_data = update_buyer(user,data)
         return Response(data=new_data)
 
-    @buyer_api
     def post(self,request,*args,**kwargs):
         data = request.data
         if "google_id" not in data:
@@ -126,10 +127,14 @@ class BuyerAPI(APIView):
         return Response(data=new_data)
 
 class SellerAPI(APIView):
+    authentication_classes = ()
+    permission_classes = ()
     def post(self,request,*args,**kwargs):
         pass
 
 class OTPAPI(APIView):
+    authentication_classes = ()
+    permission_classes = ()
     def post(self,request,*args,**kwargs):
         data = request.data
         user = request.user
