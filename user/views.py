@@ -61,6 +61,11 @@ class UsersAPI(APIView):
         response={"users":user_get_all()}
         return Response(data=response)
 
+class UsersssAPI(APIView):
+    def get(self,request,*args,**kwargs):
+        response={"users":user_get_all()}
+        return Response(data=response)
+
 class BuyerAPI(APIView):
     authentication_classes = ()
     permission_classes = ()
