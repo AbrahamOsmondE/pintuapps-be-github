@@ -17,7 +17,7 @@ class Order(models.Model):
 class OrderItems(models.Model):
     order_id = models.ForeignKey(Order, on_delete=models.CASCADE)
     quantity = models.IntegerField()
-    shopitem_id = models.ForeignKey(ShopItem, on_delete=models.CASCADE
+    shopitem_id = models.ForeignKey(ShopItem, on_delete=models.CASCADE)
     to_user_id=models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
