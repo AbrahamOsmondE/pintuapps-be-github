@@ -28,9 +28,6 @@ class UserAPI(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        otp=encodeOTP(data['email']).at(0)
-        sendEmail(otp,data['email'])
-
         user, registered = user_get_create(data['email'],data['google_id'])
             
         response = Response(data=user_get_me(user, registered))
@@ -55,24 +52,18 @@ class UserAPI(APIView):
         return Response(status=status.HTTP_200_OK)
 
 class UsersAPI(APIView):
-    authentication_classes = ()
-    permission_classes = ()
-    def get(self,request,*args,**kwargs):
-        response={"users":user_get_all()}
-        return Response(data=response)
-
-class UsersssAPI(APIView):
+    @all_api
     def get(self,request,*args,**kwargs):
         response={"users":user_get_all()}
         return Response(data=response)
 
 class BuyerAPI(APIView):
-    authentication_classes = ()
-    permission_classes = ()
+    @buyer_api
     def get(self,request,*args,**kwargs):
         google_id = request.GET['google_id']
         return Response(data=get_buyer(google_id=google_id))
 
+    @buyer_api
     def put(self,request,*args,**kwargs):
         data = request.data
         if "google_id" not in data:
@@ -101,6 +92,7 @@ class BuyerAPI(APIView):
         new_data = update_buyer(user,data)
         return Response(data=new_data)
 
+    @all_api
     def post(self,request,*args,**kwargs):
         data = request.data
         if "google_id" not in data:
@@ -132,17 +124,20 @@ class BuyerAPI(APIView):
         return Response(data=new_data)
 
 class SellerAPI(APIView):
-    authentication_classes = ()
-    permission_classes = ()
     def post(self,request,*args,**kwargs):
         pass
 
 class OTPAPI(APIView):
-    authentication_classes = ()
-    permission_classes = ()
+    authentication_classes=()
+    permission_classes=()
     def post(self,request,*args,**kwargs):
         data = request.data
-        user = request.user
-        if(verifyOTP(data['otp'],user.email)):
+        if(verifyOTP(data['otp'],data['email'])):
             return Response({"verified":True})
         return Response({"verified":False})
+
+    def get(self,request,*args,**kwargs):
+        data = request.GET['email']
+        otp=encodeOTP(data).at(0)
+        sent=sendEmail(otp,data)
+        return Response({"sent":sent})

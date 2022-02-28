@@ -11,6 +11,5 @@ urlpatterns = [
     path('user/buyer/',views.BuyerAPI.as_view(), name="buyer"),
     path("user/",views.UserAPI.as_view(),name="user"),
     path("users/",views.UsersAPI.as_view(), name="users"),
-    path("users_dummy/",views.UsersssAPI.as_view(), name="users"),
     path("otp/",views.OTPAPI.as_view(), name="otp")
 ]

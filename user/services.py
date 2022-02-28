@@ -88,6 +88,8 @@ def user_get_all():
     return data
 
 def create_buyer(user,data):
+    user.user_type="buyer"
+    user.save()
     buyer = Buyer(user=user,name=data['name'],ntu_email=data['ntu_email'], contact_number=data['contact_number'], gender=data['gender'], birth_date=data['birth_date'], course=data['course'], graduation_year=data['graduation_year'], address=data['address'], origin_city=data['origin_city'], company=data['company'])
     buyer.save()
     find = Buyer.objects.get(user=user)
@@ -95,8 +97,8 @@ def create_buyer(user,data):
         return None, False
     data = {
         "id": buyer.user.id,
-        "google_id":buyer.google_id,
-        "user_type":"buyer",
+        "google_id": user.google_id,
+        "user_type": user.user_type,
         "name": buyer.name,
         "ntu_email": buyer.ntu_email,
         "contact_number": buyer.contact_number,

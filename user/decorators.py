@@ -15,7 +15,7 @@ def seller_api(view_func):
 
 def all_api(view_func):
     def wrapper_func(self,request,*args,**kwargs):
-        if(request.user.user_type=="seller" or request.user.user_type=="buyer"):
+        if(request.user.user_type=="seller" or request.user.user_type=="buyer" or request.user.user_type=="not_registered"):
             return view_func(self,request,*args,**kwargs)
         raise ValueError("Not a user!")
     return wrapper_func
