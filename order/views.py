@@ -15,7 +15,7 @@ class BuyerOrdersList(APIView):  # GET /order_api/order/buyer
     permission_classes = ()  # delete
 
     def get(self, request, format=None):
-        user = User.objects.get(google_id=request.data["google_id"])
+        user = User.objects.get(google_id=request.GET['google_id'])
         order = Order.objects.filter(from_user_id=user)
         serializer = ShopOrderSerializer(order, many=True)
         return Response(serializer.data)
@@ -27,7 +27,7 @@ class shopItemList(APIView):  # GET /order_api/order/seller/<shop_id>
 
     def get(self, request, shop_id, format=None):
         print("tes")
-        user = User.objects.get(google_id=request.data["google_id"])
+        user = User.objects.get(google_id=request.GET['google_id'])
         shop = Shop.objects.get(shop_owner_id=user, id=shop_id)
         serializer = ShopSerializer(shop)
         return Response(serializer.data)
@@ -38,7 +38,7 @@ class BuyerOrder(APIView):  # GET /order_api/order/buyer/<order_id>
     permission_classes = ()  # delete
 
     def get(self, request, order_id, format=None):
-        user = User.objects.get(google_id=request.data["google_id"])
+        user = User.objects.get(google_id=request.GET['google_id'])
         order = Order.objects.get(id=order_id)
         # check whether can use OrderSerializer or not
         serializer = BuyerOrderSerializer(order)
@@ -62,7 +62,7 @@ class OrderList(APIView):  # POST /order_api/order
     permission_classes = ()  # delete
 
     def post(self, request, format=None):
-        user = User.objects.get(google_id=request.data["google_id"])
+        user = User.objects.get(google_id=request.GET['google_id'])
         data = request.data
         shop_id = data['shop_id']
         data['shop_id'] = shop_id
