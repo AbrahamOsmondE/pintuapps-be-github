@@ -7,8 +7,7 @@ from user.models import User
 class Order(models.Model):
     is_submitted = models.BooleanField()
     paid = models.BooleanField()
-    from_user_id = models.ForeignKey(
-        User, on_delete=models.CASCADE, default=1)
+    from_user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="from_user_id")
     
     def __str__(self) -> str:
         return str(self.id)
@@ -18,7 +17,7 @@ class OrderItems(models.Model):
     order_id = models.ForeignKey(Order, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     shopitem_id = models.ForeignKey(ShopItem, on_delete=models.CASCADE)
-    to_user_id=models.ForeignKey(User, on_delete=models.CASCADE)
+    to_user_id=models.ForeignKey(User, on_delete=models.CASCADE, related_name="to_user_id")
 
     def __str__(self) -> str:
         return str(self.id)
