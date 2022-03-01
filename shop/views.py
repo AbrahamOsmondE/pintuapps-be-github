@@ -12,7 +12,7 @@ class ShopsList(APIView):
     permission_classes = ()  # delete
 
     def get(self, request, format=None):
-        user = User.objects.get(google_id=request.data["google_id"])
+        user = User.objects.get(google_id=request.GET['google_id'])
         if user.user_type == "buyer":
             shops = Shop.objects.all()
             print(shops)
