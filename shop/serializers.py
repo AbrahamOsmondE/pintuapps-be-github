@@ -1,5 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from .models import *
+from rest_framework import serializers
+from order.models import OrderItems
 
 
 class ShopsSerializer(ModelSerializer):
@@ -18,18 +20,35 @@ class ShopCustomSerializer(ModelSerializer):
 class ShopItemSerializer(ModelSerializer):
     custom_fields = ShopCustomSerializer(
         source="shop_id.shopcustom_set.all", many=True, read_only=True)
+    quantity = serializers.SerializerMethodField()
 
     class Meta:
         model = ShopItem
         fields = ["id", "item_name", "description",
                   "price", "quantity", "display_picture", "custom_fields"]
 
+    def get_quantity(self, obj):
+        total = obj.original_quantity
+        orders = OrderItems.objects.filter(shopitem_id=obj.id)
+        for order in orders.values():
+            total -= order["quantity"]
+        return total
+
 
 class ShopItemsSerializer(ModelSerializer):
+    quantity = serializers.SerializerMethodField()
+
     class Meta:
         model = ShopItem
-        fields = ["id", "item_name", "description",
-                  "price", "quantity", "display_picture"]
+        fields = ["id", "item_name", "description", "quantity",
+                  "price", "display_picture"]
+
+    def get_quantity(self, obj):
+        total = obj.original_quantity
+        orders = OrderItems.objects.filter(shopitem_id=obj.id)
+        for order in orders.values():
+            total -= order["quantity"]
+        return total
 
 
 class ShopSerializer(ModelSerializer):
@@ -50,7 +69,7 @@ class ShopSerializer(ModelSerializer):
             custom_fields.save()
         for shopitems in shopItems:
             shop_items = ShopItem(shop_id=shop, item_name=shopitems["item_name"], description=shopitems["description"],
-                                  price=shopitems["price"], quantity=shopitems["quantity"], display_picture=shopitems.get("display_picture", b'asdf'))
+                                  price=shopitems["price"], original_quantity=shopitems["original_quantity"], display_picture=shopitems.get("display_picture", b'asdf'))
             shop_items.save()
         return shop
 
@@ -74,7 +93,7 @@ class ShopSerializer(ModelSerializer):
 
         for shopitems in newShopItems:
             shop_items = ShopItem(shop_id=instance, item_name=shopitems["item_name"], description=shopitems["description"],
-                                  price=shopitems["price"], quantity=shopitems["quantity"], display_picture=shopitems.get("display_picture", b'asdf'))
+                                  price=shopitems["price"], original_quantity=shopitems["original_quantity"], display_picture=shopitems.get("display_picture", b'asdf'))
             shop_items.save()
 
         instance.shop_owner = data.get(

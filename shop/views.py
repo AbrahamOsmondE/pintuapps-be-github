@@ -12,7 +12,7 @@ class ShopsList(APIView):
     permission_classes = ()  # delete
 
     def get(self, request, format=None):
-        user = User.objects.get(google_id=request.GET.get("google_id"))
+        user = User.objects.get(google_id=request.data["google_id"])
         if user.user_type == "buyer":
             shops = Shop.objects.all()
             print(shops)
@@ -30,8 +30,6 @@ class ShopDetails(APIView):
     def get(self, request, shop_id, format=None):
         shop = Shop.objects.get(id=shop_id)
         serializer = ShopSerializer(shop, many=False)
-        print(type(shop.shop_owner_id))
-        print("abcd")
         return Response(serializer.data)
 
     def put(self, request, shop_id, format=None):
@@ -45,7 +43,7 @@ class ShopDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, shop_id, format=None):
-        user = User.objects.get(google_id=request.data["google-id"])
+        user = User.objects.get(google_id=request.data["google_id"])
         data = request.data
         data["shop_owner_id"] = user
         serializer = ShopSerializer(
