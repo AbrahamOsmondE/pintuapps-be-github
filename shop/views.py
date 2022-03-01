@@ -43,7 +43,7 @@ class ShopDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, shop_id, format=None):
-        user = User.objects.get(google_id=request.data["google_id"])
+        user = User.objects.get(google_id=request.headers.get("google-id", ""))
         data = request.data
         data["shop_owner_id"] = user
         serializer = ShopSerializer(
