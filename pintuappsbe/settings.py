@@ -151,7 +151,8 @@ CORS_ALLOW_HEADERS = (
     'accept',
     'origin',
     'authorization',
-    'X-CSRFToken'
+    'X-CSRFToken',
+    'google-id'
 )
 
 REST_FRAMEWORK = {
