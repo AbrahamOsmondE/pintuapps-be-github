@@ -8,6 +8,8 @@ from .services import *
 # Create your views here.
 
 class CartItemsAPI(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     def get(self,request,*args,**kwargs):
         google_id = request.GET['google_id']
         cart_items = get_cart_items(google_id)
@@ -39,12 +41,16 @@ class CartItemsAPI(APIView):
         return Response(data=data)
 
 class SingleCartItemsAPI(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     def delete(self,request,*args,**kwargs):
         cart_item_id = kwargs['cart_item_id']
         delete_cart_items(cart_item_id)
         return Response(status=status.HTTP_200_OK)
 
 class ShopItemsAPI(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     def get(self,request,*args,**kwargs):
         google_id = request.GET['google_id']
         shop_id = kwargs['shop_id']
