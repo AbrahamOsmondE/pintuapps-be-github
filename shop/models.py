@@ -26,7 +26,7 @@ class ShopItem(models.Model):
     display_picture = models.BinaryField()
 
     def __str__(self) -> str:
-        return self.item_name
+        return self.item_name + str(self.id)
 
 
 class ShopCustom(models.Model):
