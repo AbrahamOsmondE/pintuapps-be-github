@@ -59,6 +59,6 @@ class ShopItemsAPI(APIView):
 
     def delete(self,request,*args,**kwargs):
         google_id = request.GET['google_id']
-        shop_id = kwargs['shop_id']
-        delete_shop_cart_items(shop_id, google_id)
+        shop_item_id = kwargs['shop_item_id']
+        delete_shop_cart_items(shop_item_id, google_id)
         return Response(status=status.HTTP_200_OK)

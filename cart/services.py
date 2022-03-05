@@ -124,8 +124,8 @@ def delete_cart_items(cart_item_id):
         raise ValueError("No cart items found upon deletion!")
     cart_item.delete()
 
-def delete_shop_cart_items(shop_id, google_id):
+def delete_shop_cart_items(shop_item_id, google_id):
     user = User.objects.filter(google_id=google_id).first()
     if not user:
         raise ValueError("No users found upon deletion!")
-    CartItem.objects.filter(shop_item_id__shop_id=shop_id, user_id=user.id).delete()
+    CartItem.objects.filter(shop_item_id=shop_item_id, user_id=user.id).delete()
