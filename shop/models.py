@@ -23,7 +23,7 @@ class ShopItem(models.Model):
     description = models.TextField()
     price = models.FloatField()
     original_quantity = models.IntegerField(db_column="quantity")
-    display_picture = models.BinaryField()
+    display_picture = models.TextField()
 
     def __str__(self) -> str:
         return self.item_name + str(self.id)
