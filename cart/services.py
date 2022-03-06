@@ -1,9 +1,9 @@
 from .models import CartItem, CartCustom
-from user.models import User
-from shop.models import Shop, ShopItem
+from user.models import User, Buyer
+from shop.models import Shop, ShopItem, ShopCustom
 
-def get_cart_items(google_id):
-    user = User.objects.filter(google_id=google_id).first()
+def get_cart_items(user_id):
+    user = User.objects.filter(id=user_id).first()
     if not user:
         raise ValueError("No users found upon deletion!")
     shops = CartItem.objects.filter(user_id=user.id).select_related('shop_item_id').order_by('shop_item_id__shop_id').values('shop_item_id__shop_id').distinct()
@@ -38,15 +38,24 @@ def get_cart_items(google_id):
     }
     return data
 
-def get_shop_cart_items(google_id, shop_id):
-    user = User.objects.filter(google_id=google_id).first()
+def get_shop_cart_items(user_id, shop_id):
+    user = User.objects.filter(id=user_id).first()
     if not user:
         raise ValueError("No users found upon deletion!")
     shop = Shop.objects.filter(id=shop_id).first()
     if not shop:
         raise ValueError("No shops found upon deletion!")
     shop_items = CartItem.objects.select_related('shop_item_id').filter(shop_item_id__shop_id=shop_id, user_id=user.id).values('shop_item_id__id').distinct()
+    shop_customs_list = []
     shop_items_list = []
+    shop_customs = ShopCustom.objects.filter(shop_id__id=shop_id)
+    for shop_custom in shop_customs:
+        shop_customs_list.append({
+            "custom_field_id": shop_custom.id,
+            "type": shop_custom.type,
+            "placeholder": shop_custom.placeholder,
+            "options": shop_custom.options
+        })
     for shop_item in shop_items:
         shop_items_objects = CartItem.objects.filter(shop_item_id=shop_item.get('shop_item_id__id'), user_id=user.id)
         shop_items_customs_list = []
@@ -56,10 +65,25 @@ def get_shop_cart_items(google_id, shop_id):
             shop_items_customs = CartCustom.objects.filter(cart_item_id=shop_items_object.id)
             shop_items_customs_quantity += shop_items_object.quantity
             for shop_items_custom in shop_items_customs:
-                shop_items_customs_map.append({
-                    'type': shop_items_custom.type,
-                    'option': shop_items_custom.option
-                })
+                shop_custom = ShopCustom.objects.filter(id=shop_items_custom.shop_custom_id.id).first()
+                if shop_custom.type == "user":
+                    try:
+                        user_option = Buyer.objects.select_related('user').filter(user__id=int(shop_items_custom.value)).first()
+                        if user_option:
+                            option = user_option.name
+                        else:
+                            option = "unknown user"
+                    except:
+                        option = "unknown user"
+                    shop_items_customs_map.append({
+                        "shop_custom_id": shop_custom.id,
+                        "value": option
+                    })
+                else:
+                    shop_items_customs_map.append({
+                        "shop_custom_id": shop_custom.id,
+                        "value": shop_items_custom.value
+                    })
             shop_items_customs_list.append({
                 "cart_item_id": shop_items_object.id,
                 "cart_items_customs": shop_items_customs_map
@@ -78,12 +102,13 @@ def get_shop_cart_items(google_id, shop_id):
         "shop_name": shop_detail.shop_name,
         "shop_id": shop_detail.id,
         "user_id": user.id,
+        "custom_fields": shop_customs_list,
         "cart_items": shop_items_list
     }
     return shop_list
 
-def post_cart_items(google_id, shop_item_id, quantity):
-    user = User.objects.filter(google_id=google_id).first()
+def post_cart_items(user_id, shop_item_id, quantity):
+    user = User.objects.filter(id=user_id).first()
     shop_item = ShopItem.objects.filter(id=shop_item_id).first()
     if not user:
         raise ValueError("No users found upon deletion!")
@@ -91,15 +116,18 @@ def post_cart_items(google_id, shop_item_id, quantity):
     cart_item.save()
     return cart_item
 
-def post_cart_custom(cart_item_id, type, option):
+def post_cart_custom(cart_item_id, shop_custom_id, value):
     cart_item = CartItem.objects.filter(id=cart_item_id).first()
     if not cart_item:
         raise ValueError("No cart items found upon deletion!")
-    cart_custom = CartCustom(cart_item_id=cart_item, type=type, option=option)
+    shop_custom = ShopCustom.objects.filter(id=shop_custom_id).first()
+    if not shop_custom:
+        raise ValueError("No shop customs found upon deletion!")
+    cart_custom = CartCustom(cart_item_id=cart_item, shop_custom_id=shop_custom, value=value)
     cart_custom.save()
 
-def put_cart_items(google_id, shop_item_id, cart_item_id, quantity):
-    user = User.objects.filter(google_id=google_id).first()
+def put_cart_items(user_id, shop_item_id, cart_item_id, quantity):
+    user = User.objects.filter(id=user_id).first()
     if not user:
         raise ValueError("No users found upon deletion!")
     cart_item = CartItem.objects.filter(cart_item_id=cart_item_id).first()
@@ -124,8 +152,8 @@ def delete_cart_items(cart_item_id):
         raise ValueError("No cart items found upon deletion!")
     cart_item.delete()
 
-def delete_shop_cart_items(shop_item_id, google_id):
-    user = User.objects.filter(google_id=google_id).first()
+def delete_shop_cart_items(shop_item_id, user_id):
+    user = User.objects.filter(id=user_id).first()
     if not user:
         raise ValueError("No users found upon deletion!")
     CartItem.objects.filter(shop_item_id=shop_item_id, user_id=user.id).delete()

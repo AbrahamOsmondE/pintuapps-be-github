@@ -13,7 +13,7 @@ class OrderAdmin(admin.ModelAdmin):
         return name
 
 
-class OrderItemsAdmin(admin.ModelAdmin):
+class OrderItemAdmin(admin.ModelAdmin):
     list_display = ("to_user_name", "to_user_address",
                     "to_user_contact", "shop_item_name")
 
@@ -35,10 +35,10 @@ class OrderItemsAdmin(admin.ModelAdmin):
 
 
 class OrderCustomAdmin(admin.ModelAdmin):
-    list_display = ("order_item_id", "type", "option")
+    list_display = ("order_item_id", "value")
 
 
 admin.site.register(Order, OrderAdmin)
-admin.site.register(OrderItems, OrderItemsAdmin)
+admin.site.register(OrderItems, OrderItemAdmin)
 admin.site.register(OrderCustom, OrderCustomAdmin)
 # Register your models here.

@@ -9,7 +9,7 @@ class Shop(models.Model):
     shop_name = models.CharField(max_length=200)
     description = models.TextField()
     open_date = models.CharField(max_length=50)
-    display_picture = models.BinaryField()
+    display_picture = models.TextField()
     is_open = models.BooleanField()
     closed_date = models.CharField(max_length=50)
 
@@ -26,7 +26,7 @@ class ShopItem(models.Model):
     display_picture = models.TextField()
 
     def __str__(self) -> str:
-        return self.item_name + str(self.id)
+        return self.item_name
 
 
 class ShopCustom(models.Model):

@@ -53,14 +53,14 @@ def jwt_response_payload_handler(token, user=None, request=None, issued_at=None)
 def create_user(email,google_id):
     return User.objects.create_user(email=email,google_id=google_id, password=None)
 
-def user_delete(google_id):
-    user = User.objects.filter(google_id=google_id).first()
+def user_delete(user_id):
+    user = User.objects.filter(id=user_id).first()
     if not user:
         raise ValueError("No user found upon deletion!")
     user.delete()
 
-def user_get(google_id):
-    user = User.objects.filter(google_id=google_id).first()
+def user_get(user_id):
+    user = User.objects.filter(id=user_id).first()
     if user:
         return user
     raise ValueError("user not found!")
@@ -73,9 +73,8 @@ def user_get_create(email,google_id):
 
 def user_get_me(user, registered):
     return {
-        "id":user.id,
+        "user_id":user.id,
         "email":user.email,
-        "google_id":user.google_id,
         "user_type":user.user_type,
         "registered":registered
     }
@@ -84,7 +83,7 @@ def user_get_all():
     buyers = Buyer.objects.all()
     data=[]
     for i in range(len(buyers)):
-        data.append({"name":buyers[i].name, "id":buyers[i].user.id})
+        data.append({"name":buyers[i].name, "user_id":buyers[i].user.id})
     return data
 
 def create_buyer(user,data):
@@ -96,10 +95,10 @@ def create_buyer(user,data):
     if not find:
         return None, False
     data = {
-        "id": buyer.user.id,
-        "google_id": user.google_id,
+        "user_id": buyer.user.id,
         "user_type": user.user_type,
         "name": buyer.name,
+        "personal_email": user.email,
         "ntu_email": buyer.ntu_email,
         "contact_number": buyer.contact_number,
         "gender": buyer.gender,
@@ -126,9 +125,10 @@ def update_buyer(user,data):
     buyer.company = data['company']
     buyer.save()
     data = {
-        "id": buyer.user.id,
-        "google_id":user.google_id,
+        "user_id": buyer.user.id,
+        "user_type": buyer.user.user_type,
         "name": buyer.name,
+        "personal_email":buyer.user.email,
         "ntu_email": buyer.ntu_email,
         "contact_number": buyer.contact_number,
         "gender": buyer.gender,
@@ -141,15 +141,15 @@ def update_buyer(user,data):
     }
     return data
 
-def get_buyer(google_id):
-    user = user_get(google_id=google_id)
+def get_buyer(user_id):
+    user = user_get(user_id=user_id)
     buyer = Buyer.objects.filter(user=user).first()
     if not buyer:
         raise ValueError("Buyer not found!")
     data = {
-        "id": buyer.user.id,
-        "google_id":google_id,
+        "user_id": buyer.user.id,
         "name": buyer.name,
+        "personal_email":buyer.user.email,
         "ntu_email": buyer.ntu_email,
         "contact_number": buyer.contact_number,
         "gender": buyer.gender,
@@ -175,6 +175,9 @@ def verifyOTP(otp, email):
     return checkOTP.verify(otp,0)
 
 def sendEmail(otp,email):
+    check = email.split("@")
+    if(check[1]!='ntu.edu.sg' or check[1]!='e.ntu.edu.sg'):
+        raise ValueError("Not an NTU Email account!")
     mail_subject = "PINTU App OTP Verification Code"
     message = render_to_string('templates.html', {
         "otp":otp
@@ -182,3 +185,4 @@ def sendEmail(otp,email):
     to_email = email
     send_email = EmailMessage(mail_subject,message, to=[to_email])
     send_email.send()
+    return True

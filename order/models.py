@@ -1,4 +1,5 @@
 from django.db import models
+from shop.models import ShopCustom
 from shop.models import ShopItem
 from user.models import User
 # Create your models here.
@@ -9,7 +10,7 @@ class Order(models.Model):
     paid = models.BooleanField()
     from_user_id = models.ForeignKey(
         User, on_delete=models.CASCADE, default=1)
-    
+
     def __str__(self) -> str:
         return str(self.id)
 
@@ -25,11 +26,6 @@ class OrderItems(models.Model):
 
 
 class OrderCustom(models.Model):
-    TYPE=(
-        ('user', 'user'),
-        ('text', 'text'),
-        ('dropdown', 'dropdown')
-    )
-    type=models.CharField(max_length=100, choices=TYPE)
-    option=models.TextField()
-    order_item_id=models.ForeignKey(OrderItems, on_delete=models.CASCADE)
+    value = models.TextField()
+    order_item_id = models.ForeignKey(OrderItems, on_delete=models.CASCADE)
+    shop_custom_id = models.ForeignKey(ShopCustom, on_delete=models.CASCADE)

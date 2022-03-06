@@ -1,6 +1,7 @@
 
 from rest_framework import serializers
 from cart.models import CartItem
+from shop.models import ShopCustom
 
 from user.models import Buyer, User
 from .models import OrderItems, Order, OrderCustom
@@ -58,6 +59,7 @@ class ShopOrderSerializer(serializers.ModelSerializer):
 class ShopItemListSerializer(serializers.ModelSerializer):
     shop_item_id = serializers.SerializerMethodField()
     sold = serializers.SerializerMethodField()
+    quantity = serializers.SerializerMethodField()
 
     def get_sold(self, obj):
 
@@ -72,6 +74,13 @@ class ShopItemListSerializer(serializers.ModelSerializer):
 
     def get_shop_item_id(self, obj):
         return obj.id
+
+    def get_quantity(self, obj):
+        total = obj.original_quantity
+        orders = OrderItems.objects.filter(shopitem_id=obj.id)
+        for order in orders.values():
+            total -= order["quantity"]
+        return total
 
     class Meta:
         model = ShopItem
@@ -91,18 +100,14 @@ class ShopSerializer(serializers.ModelSerializer):
 # BuyerOrder
 
 class OrderCustomSerializer(serializers.ModelSerializer):
-    option = serializers.SerializerMethodField()
+    shop_custom_id = serializers.SerializerMethodField()
 
-    def get_option(self, obj):
-        if obj.type == "user":
-            name = Buyer.objects.get(id=obj.option).name
-            return name
-        else:
-            return obj.option
+    def get_shop_custom_id(self, obj):
+        return obj.shop_custom_id.id
 
     class Meta:
         model = OrderCustom
-        fields = ['type', 'option']
+        fields = ['shop_custom_id', 'value']
 
 
 class BuyerOrderItemsSerializer(serializers.ModelSerializer):
@@ -124,7 +129,24 @@ class BuyerOrderItemsSerializer(serializers.ModelSerializer):
         fields = ['item_name', 'quantity', 'total_price', 'order_customs']
 
 
+class BuyerOrderCustomFieldsSerializer(serializers.ModelSerializer):
+    custom_field_id = serializers.SerializerMethodField()
+    placeholder = serializers.SerializerMethodField()
+
+    def get_custom_field_id(self, obj):
+        print("object is ", obj)
+        return obj.shop_custom_id.id
+
+    def get_placeholder(self, obj):
+        return obj.shop_custom_id.placeholder
+
+    class Meta:
+        model = OrderCustom
+        fields = ["custom_field_id", "placeholder"]
+
+
 class BuyerOrderSerializer(serializers.ModelSerializer):
+    custom_fields = serializers.SerializerMethodField()
     orders = BuyerOrderItemsSerializer(
         source="orderitems_set", many=True, read_only=True)
     shop_name = serializers.SerializerMethodField()
@@ -143,20 +165,30 @@ class BuyerOrderSerializer(serializers.ModelSerializer):
     def get_order_id(self, obj):
         return obj.id
 
+    def get_custom_fields(self, obj):
+        order_items = list(obj.orderitems_set.all())
+        order_customs = list(OrderCustom.objects.filter(
+            order_item_id__in=order_items))
+        serialized = []
+        for custom in order_customs:
+            serialized.append(BuyerOrderCustomFieldsSerializer(custom).data)
+        return serialized
+
     class Meta:
         model = Order
-        fields = ['order_id', 'shop_id', 'shop_name', "orders"]
+        fields = ['order_id', 'shop_id',
+                  'shop_name', "custom_fields", "orders"]
 
 
 # SellerDetailedShopOrder
 
 class SellerOrderItemsSerializer(serializers.ModelSerializer):
-    item_name = serializers.SerializerMethodField()
+    shop_item_name = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
 
-    def get_item_name(self, obj):
-        item_name = obj.shopitem_id.item_name
-        return item_name
+    def get_shop_item_name(self, obj):
+        shop_item_name = obj.shopitem_id.item_name
+        return shop_item_name
 
     def get_total_price(self, obj):
         total_price = obj.quantity * obj.shopitem_id.price
@@ -164,7 +196,7 @@ class SellerOrderItemsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItems
-        fields = ['item_name', 'quantity', 'total_price']
+        fields = ['shop_item_name', 'quantity', 'total_price']
 
 
 class SellerOrderSerializer(serializers.Serializer):
@@ -176,8 +208,8 @@ class SellerOrderSerializer(serializers.Serializer):
         # order = OrderItems.objects.filter(list(orderitems_set.all())[
         #                                   0].shopitem_id.shop_id == obj.shop_id)
         user = obj.from_user_id
-        buyer = Buyer.objects.get(user=user).name
-        return buyer
+        buyer_name = Buyer.objects.get(user=user).name
+        return buyer_name
 
     class Meta:
         model = Order
@@ -247,7 +279,6 @@ class OrderListSerializer(serializers.ModelSerializer):
             is_submitted=True, paid=False, from_user_id=user)
         # print(order.orderitems_set.all())
         validated_data['order_id'] = order.id
-        order_id = order.id
         cartitemset = []
         shop = Shop.objects.get(id=shop_id)
         for shopitem in list(shop.shopitem_set.all()):
@@ -265,15 +296,17 @@ class OrderListSerializer(serializers.ModelSerializer):
             # if cart
             # to_user_id =
             to_user_id = user
-            for custom in list(cart.cartcustom_set.all()):
-                if custom.type == user:
-                    to_user_id = custom.option
+
+            for cart_custom in list(cart.cartcustom_set.all()):
+                if cart_custom.shop_custom_id.type == "user":
+                    user_id = int(cart_custom.value)
+                    to_user_id = User.objects.get(id=user_id)
             orders = OrderItems.objects.create(
                 order_id=order, quantity=qty, shopitem_id=shopitem_id, to_user_id=to_user_id)
             orders.save()
             for custom in list(cart.cartcustom_set.all()):
                 order_customs = OrderCustom.objects.create(
-                    order_item_id=orders, type=custom.type, option=custom.option)
+                    order_item_id=orders, value=custom.value, shop_custom_id=custom.shop_custom_id)
                 order_customs.save()
                 custom.delete()
             cart.delete()

@@ -62,7 +62,7 @@ class OrderList(APIView):  # POST /order_api/order
     permission_classes = ()  # delete
 
     def post(self, request, format=None):
-        user = User.objects.get(id=request.data["google_id"])
+        user = User.objects.get(id=request.headers["user-id"])
         data = request.data
         shop_id = data['shop_id']
         data['user'] = user

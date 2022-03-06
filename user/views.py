@@ -36,8 +36,7 @@ class UserAPI(APIView):
 
         user_data = user_get_me(user, registered)
         data_response = {
-            "id":user_data['id'],
-            "google_id":user_data['google_id'],
+            "user_id":user_data['user_id'],
             "user_type":user_data['user_type'],
             "registered":user_data['registered'],
             "token":token
@@ -45,29 +44,30 @@ class UserAPI(APIView):
         response = Response(data=data_response)
         return response
     
+    @admin_api
     def delete(self,request,*args,**kwargs):
-        data = request.GET['google_id']
-        user_delete(google_id=data)
+        data = request.GET['user_id']
+        user_delete(user_id=data)
         return Response(status=status.HTTP_200_OK)
 
 class UsersAPI(APIView):
-    authentication_classes = ()
-    permission_classes = ()
+    @all_api
     def get(self,request,*args,**kwargs):
         response={"users":user_get_all()}
         return Response(data=response)
 
 class BuyerAPI(APIView):
-    authentication_classes = ()
-    permission_classes = ()
+    @buyer_api
     def get(self,request,*args,**kwargs):
-        google_id = request.GET['google_id']
-        return Response(data=get_buyer(google_id=google_id))
+        user_id = request.GET['user_id']
+        return Response(data=get_buyer(user_id=user_id))
 
+    @buyer_api
     def put(self,request,*args,**kwargs):
+        user_id = request.headers['user-id']
         data = request.data
-        if "google_id" not in data:
-            raise ValueError("No google id!")
+        if not user_id:
+            raise ValueError("No user_id!")
         if "name" not in data:
             raise ValueError("No name!")
         if "ntu_email" not in data:
@@ -88,14 +88,16 @@ class BuyerAPI(APIView):
             raise ValueError("No origin city!")
         if "company" not in data:
             raise ValueError("No company!")
-        user = user_get(google_id=data['google_id'])
+        user = user_get(user_id=user_id)
         new_data = update_buyer(user,data)
         return Response(data=new_data)
 
+    @all_api
     def post(self,request,*args,**kwargs):
+        user_id = request.headers['user-id']
         data = request.data
-        if "google_id" not in data:
-            raise ValueError("No google id!")
+        if not user_id:
+            raise ValueError("No user_id!")
         if "name" not in data:
             raise ValueError("No name!")
         if "ntu_email" not in data:
@@ -116,15 +118,13 @@ class BuyerAPI(APIView):
             raise ValueError("No origin city!")
         if "company" not in data:
             raise ValueError("No company!")
-        user = user_get(google_id=data['google_id'])
+        user = user_get(user_id=user_id)
         new_data,status = create_buyer(user,data)
         if not status:
             raise ValueError("Buyer not created!")
         return Response(data=new_data)
 
 class SellerAPI(APIView):
-    authentication_classes = ()
-    permission_classes = ()
     def post(self,request,*args,**kwargs):
         pass
 
