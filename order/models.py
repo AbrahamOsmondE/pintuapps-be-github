@@ -29,3 +29,4 @@ class OrderCustom(models.Model):
     value = models.TextField()
     order_item_id = models.ForeignKey(OrderItems, on_delete=models.CASCADE)
     shop_custom_id = models.ForeignKey(ShopCustom, on_delete=models.CASCADE)
+    type = models.TextField()
