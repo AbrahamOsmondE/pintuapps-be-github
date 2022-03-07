@@ -15,6 +15,8 @@ from .services import encodeOTP, google_validation, sendEmail, user_get, user_ge
 # Create your views here.
 
 class UserAPI(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     class InputSerializer(serializers.Serializer):
         email = serializers.EmailField()
         google_id = serializers.CharField(max_length=50)
