@@ -77,6 +77,8 @@ class OrderList(APIView):  # POST /order_api/order
 
 
 class DeleteOrder(APIView):  # DELETE /order_api/order/<order_id>
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     def delete(self, request, order_id, format=None):
         order = Order.objects.get(id=order_id)
         order.delete()
