@@ -15,8 +15,6 @@ from .services import encodeOTP, google_validation, sendEmail, user_get, user_ge
 # Create your views here.
 
 class UserAPI(APIView):
-    authentication_classes = ()
-    permission_classes = ()
     class InputSerializer(serializers.Serializer):
         email = serializers.EmailField()
         google_id = serializers.CharField(max_length=50)
@@ -51,16 +49,12 @@ class UserAPI(APIView):
         return Response(status=status.HTTP_200_OK)
 
 class UsersAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     @all_api
     def get(self,request,*args,**kwargs):
         response={"users":user_get_all()}
         return Response(data=response)
 
 class BuyerAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     @buyer_api
     def get(self,request,*args,**kwargs):
         user_id = request.GET['user_id']
@@ -129,8 +123,6 @@ class BuyerAPI(APIView):
         return Response(data=new_data)
 
 class SellerAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     def post(self,request,*args,**kwargs):
         pass
 
