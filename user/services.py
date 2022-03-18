@@ -176,7 +176,7 @@ def verifyOTP(otp, email):
 
 def sendEmail(otp,email):
     check = email.split("@")
-    if(check[1]!='ntu.edu.sg' or check[1]!='e.ntu.edu.sg'):
+    if(check[1]!='ntu.edu.sg' and check[1]!='e.ntu.edu.sg'):
         raise ValueError("Not an NTU Email account!")
     mail_subject = "PINTU App OTP Verification Code"
     message = render_to_string('templates.html', {
