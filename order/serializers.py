@@ -261,8 +261,8 @@ class OrderListSerializer(serializers.ModelSerializer):
     order_id = serializers.SerializerMethodField()
 
     def get_shop_name(self, obj):
-        # name = list(obj.orderitems_set.all())[0].shop_item_id.shop_id.name
-        return "name"
+        name = list(obj.orderitems_set.all())[0].shop_item_id.shop_id.name
+        return name
 
     def get_shop_id(self, obj):
         return obj.id
@@ -273,20 +273,22 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         data = self.context["request"]
-        shop_id = data.pop("shop_id")
-        user = data.pop("user")
-        order = Order.objects.create(
-            is_submitted=True, paid=False, from_user_id=user)
-        # print(order.orderitems_set.all())
-        validated_data['order_id'] = order.id
+        shop_id = data.pop("shop_id")[0]
+        user = data.pop("user")[0]
         cartitemset = []
-        shop = Shop.objects.get(id=shop_id)
+        shop = Shop.objects.get(id=shop_id[0])
         for shopitem in list(shop.shopitem_set.all()):
             cartitemset = list(
                 chain(cartitemset, shopitem.cartitem_set.all().filter(user_id=user)))
         cartitemids = []
         for i in cartitemset:
             cartitemids.append(i.id)
+        if len(cartitemids) == 0:
+            return data
+        order = Order.objects.create(
+            is_submitted=True, paid=False, from_user_id=user)
+        # print(order.orderitems_set.all())
+        validated_data['order_id'] = order.id
         unique_cartitemids = set(cartitemids)
         # print(unique_cartitemids)
         for id in unique_cartitemids:
@@ -299,6 +301,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
             for cart_custom in list(cart.cartcustom_set.all()):
                 if cart_custom.shop_custom_id.type == "user":
+
                     user_id = int(cart_custom.value)
                     to_user_id = User.objects.get(id=user_id)
             orders = OrderItems.objects.create(

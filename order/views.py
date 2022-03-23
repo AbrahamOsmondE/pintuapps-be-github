@@ -1,5 +1,6 @@
 from itertools import chain
 from django.shortcuts import render
+from cart.models import CartCustom
 from shop.models import Shop
 from user.models import User
 from .serializers import BuyerOrderSerializer, OrderCustomSerializer, OrderListSerializer, OrderSerializer, OrderItemsSerializer, OrderCustomSerializer, SellerDetailedShopOrderSerializer, SellerOrderSerializer, ShopItemListSerializer, ShopOrderSerializer, ShopSerializer
@@ -62,23 +63,21 @@ class OrderList(APIView):  # POST /order_api/order
     permission_classes = ()  # delete
 
     def post(self, request, format=None):
-        user = User.objects.get(id=request.headers["user-id"])
-        data = request.data
-        shop_id = data['shop_id']
-        data['user'] = user
-        data['shop_name'] = Shop.objects.get(id=shop_id).shop_name
+        print(request.headers.get("user-id"))
+        user = User.objects.get(id=request.headers.get("user-id", ""))
+        new_data = request.POST.copy()
+        shop_id = new_data['shop_id']
+        new_data["user"] = user
+        new_data['shop_name'] = Shop.objects.get(id=shop_id).shop_name
         serializer = OrderListSerializer(
-            data=data, context={'request': data})
+            data=new_data, context={'request': new_data})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-
         return Response(serializer.errors)
 
 
 class DeleteOrder(APIView):  # DELETE /order_api/order/<order_id>
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     def delete(self, request, order_id, format=None):
         order = Order.objects.get(id=order_id)
         order.delete()
