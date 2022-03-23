@@ -63,14 +63,13 @@ class OrderList(APIView):  # POST /order_api/order
     permission_classes = ()  # delete
 
     def post(self, request, format=None):
-        print(request.headers.get("user-id"))
         user = User.objects.get(id=request.headers.get("user-id", ""))
-        new_data = request.POST.copy()
-        shop_id = new_data['shop_id']
-        new_data["user"] = user
-        new_data['shop_name'] = Shop.objects.get(id=shop_id).shop_name
+        data = {}
+        data["user"] = user
+        data['shop_id'] = request.data['shop_id']
+        print(request.data)
         serializer = OrderListSerializer(
-            data=new_data, context={'request': new_data})
+            data=request.data, context={'request': data})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

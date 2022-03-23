@@ -256,27 +256,27 @@ class OrderItemsSerializer(serializers.ModelSerializer):
 class OrderListSerializer(serializers.ModelSerializer):
     orders = BuyerOrderItemsSerializer(
         source="orderitems_set", many=True, read_only=True)
-    shop_name = serializers.SerializerMethodField()
-    shop_id = serializers.SerializerMethodField()
-    order_id = serializers.SerializerMethodField()
+    # shop_name = serializers.SerializerMethodField()
+    # shop_id = serializers.SerializerMethodField()
+    # order_id = serializers.SerializerMethodField()
 
-    def get_shop_name(self, obj):
-        name = list(obj.orderitems_set.all())[0].shop_item_id.shop_id.name
-        return name
+    # def get_shop_name(self, obj):
+    #     name = list(obj.orderitems_set.all())[0].shop_item_id.shop_id.name
+    #     return name
 
-    def get_shop_id(self, obj):
-        return obj.id
+    # def get_shop_id(self, obj):
+    #     return obj.id
 
-    def get_order_id(self, obj):
-        return obj.id
+    # def get_order_id(self, obj):
+    #     return obj.id
     # from user id kalau ga exist to user id = from user id
 
     def create(self, validated_data):
         data = self.context["request"]
-        shop_id = data.pop("shop_id")[0]
-        user = data.pop("user")[0]
+        shop_id = data.pop("shop_id")
+        user = data.pop("user")
+        shop = Shop.objects.get(id=shop_id)
         cartitemset = []
-        shop = Shop.objects.get(id=shop_id[0])
         for shopitem in list(shop.shopitem_set.all()):
             cartitemset = list(
                 chain(cartitemset, shopitem.cartitem_set.all().filter(user_id=user)))
@@ -317,4 +317,4 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['order_id', 'shop_id', 'shop_name', "orders"]
+        fields = ["orders"]
