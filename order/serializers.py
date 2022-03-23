@@ -34,7 +34,11 @@ class OrderSerializer(serializers.ModelSerializer):
     order_id = serializers.SerializerMethodField()
 
     def get_shop_name(self, obj):
-        shop_name = list(obj.orderitems_set.all())[
+        order_items = list(obj.orderitems_set.all())
+        if len(order_items) == 0:
+            return "Invalid Order"
+
+        shop_name = order_items[
             0].shopitem_id.shop_id.shop_name
         return shop_name
 
