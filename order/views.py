@@ -30,9 +30,6 @@ class BuyerOrdersList(APIView):  # GET /order_api/order/buyer
 
 
 class ShopItemList(APIView):  # GET /order_api/order/seller/<shop_id>
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, shop_id, format=None):
         user = User.objects.get(id=request.GET["user_id"])
         shop = Shop.objects.get(shop_owner_id=user, id=shop_id)
@@ -41,9 +38,6 @@ class ShopItemList(APIView):  # GET /order_api/order/seller/<shop_id>
 
 
 class BuyerOrder(APIView):  # GET /order_api/order/buyer/<order_id>
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, order_id, format=None):
         user_id = request.GET['user_id']
         order_items = get_shop_order_items(user_id, order_id)
@@ -59,9 +53,6 @@ class BuyerOrder(APIView):  # GET /order_api/order/buyer/<order_id>
 
 # GET /order_api/order/seller/detailed/<shop_id>
 class SellerDetailedShopOrder(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, shop_id, format=None):
         shop = Shop.objects.get(id=shop_id)
         # check whether can use OrderSerializer or not
@@ -70,9 +61,6 @@ class SellerDetailedShopOrder(APIView):
 
 
 class OrderList(APIView):  # POST /order_api/order
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def post(self, request, format=None):
         user = User.objects.get(id=request.headers.get("user-id", ""))
         data = {}

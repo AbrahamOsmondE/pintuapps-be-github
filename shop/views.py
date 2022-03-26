@@ -9,9 +9,6 @@ from datetime import date
 
 
 class ShopsList(APIView):  # GET shops_api/shops/
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, format=None):
         user = User.objects.get(id=request.GET.get("user_id", ""))
         if user.user_type == "buyer":
@@ -45,9 +42,6 @@ class ShopsList(APIView):  # GET shops_api/shops/
 
 
 class ShopDetails(APIView):  # GET, PUT, POST, DELETE shops_api/shops/<shop_id>
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, shop_id, format=None):
         shop = Shop.objects.get(id=shop_id)
         serializer = ShopSerializer(shop, many=False)
@@ -83,9 +77,6 @@ class ShopDetails(APIView):  # GET, PUT, POST, DELETE shops_api/shops/<shop_id>
 
 
 class ShopItemDetails(APIView):  # GET shops_api/shops/<shop_id>/<shop_item_id>/
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, shop_id, shop_item_id, format=None):
         shop = Shop.objects.get(id=shop_id)
         item = ShopItem.objects.get(id=shop_item_id, shop_id=shop_id)
