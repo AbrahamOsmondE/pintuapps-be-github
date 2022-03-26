@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from .models import Order, OrderItems, OrderCustom
 from rest_framework.views import APIView
 from rest_framework import status
+
+from .services import *
 # Create your views here.
 
 
@@ -16,18 +18,22 @@ class BuyerOrdersList(APIView):  # GET /order_api/order/buyer
     permission_classes = ()  # delete
 
     def get(self, request, format=None):
+        user_id = request.GET['user_id']
+        order_items = get_shop_items(user_id)
+        return Response(data=order_items)
+        '''
         user = User.objects.get(id=request.GET["user_id"])
         order = Order.objects.filter(from_user_id=user)
         serializer = ShopOrderSerializer(order, many=True)
         return Response(serializer.data)
+        '''
 
 
-class shopItemList(APIView):  # GET /order_api/order/seller/<shop_id>
+class ShopItemList(APIView):  # GET /order_api/order/seller/<shop_id>
     authentication_classes = ()  # delete
     permission_classes = ()  # delete
 
     def get(self, request, shop_id, format=None):
-        print("tes")
         user = User.objects.get(id=request.GET["user_id"])
         shop = Shop.objects.get(shop_owner_id=user, id=shop_id)
         serializer = ShopSerializer(shop)
@@ -39,11 +45,16 @@ class BuyerOrder(APIView):  # GET /order_api/order/buyer/<order_id>
     permission_classes = ()  # delete
 
     def get(self, request, order_id, format=None):
+        user_id = request.GET['user_id']
+        order_items = get_shop_order_items(user_id, order_id)
+        return Response(data=order_items)
+        '''
         user = User.objects.get(id=request.GET["user_id"])
         order = Order.objects.get(id=order_id)
         # check whether can use OrderSerializer or not
         serializer = BuyerOrderSerializer(order)
         return Response(serializer.data)
+        '''
 
 
 # GET /order_api/order/seller/detailed/<shop_id>
@@ -54,7 +65,7 @@ class SellerDetailedShopOrder(APIView):
     def get(self, request, shop_id, format=None):
         shop = Shop.objects.get(id=shop_id)
         # check whether can use OrderSerializer or not
-        serializer = SellerDetailedShopOrderSerializer(shop)
+        serializer = SellerDetailedShopOrderSerializer(shop, context={'shop_id':shop_id})
         return Response(serializer.data)
 
 
@@ -67,7 +78,6 @@ class OrderList(APIView):  # POST /order_api/order
         data = {}
         data["user"] = user
         data['shop_id'] = request.data['shop_id']
-        print(request.data)
         serializer = OrderListSerializer(
             data=request.data, context={'request': data})
         if serializer.is_valid():

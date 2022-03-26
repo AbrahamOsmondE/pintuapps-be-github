@@ -162,6 +162,21 @@ def get_buyer(user_id):
     }
     return data
 
+def get_seller(user_id):
+    user = user_get(user_id=user_id)
+    seller = Seller.objects.filter(user=user).first()
+    if not seller:
+        raise ValueError("Seller not found!")
+    data={
+        "user_id":seller.user.id,
+        "name":seller.name,
+        "user_type":seller.user.user_type,
+        "personal_email":seller.user.email,
+        "contact_number":seller.contact_number,
+        "gender":seller.gender
+    }
+    return data
+
 def create_seller(user,data):
     pass
 
@@ -176,6 +191,7 @@ def verifyOTP(otp, email):
 
 def sendEmail(otp,email):
     check = email.split("@")
+    print(check)
     if(check[1]!='ntu.edu.sg' and check[1]!='e.ntu.edu.sg'):
         raise ValueError("Not an NTU Email account!")
     mail_subject = "PINTU App OTP Verification Code"

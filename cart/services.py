@@ -92,8 +92,10 @@ def get_shop_cart_items(user_id, shop_id):
         shop_items_object = {
             "item_name": item_detail.item_name,
             "description": item_detail.description,
+            "shop_item_id": item_detail.id,
             "quantity": shop_items_customs_quantity,
             "total_price": item_detail.price*shop_items_customs_quantity,
+            "display_picture": item_detail.display_picture,
             "cart_item": shop_items_customs_list
         }
         shop_items_list.append(shop_items_object)

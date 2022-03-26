@@ -1,16 +1,16 @@
-from django.core.mail import send_mail
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_jwt.settings import api_settings
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-
+from rest_framework_jwt.blacklist.models import BlacklistedToken
+from rest_framework_jwt.utils import check_payload
 from rest_framework import serializers
+
+import time
+from datetime import datetime
 
 from .decorators import admin_api, all_api, buyer_api, seller_api
 
-from .services import encodeOTP, google_validation, sendEmail, user_get, user_get_all, user_get_me, jwt_login, user_delete, user_get_create, create_buyer, update_buyer, get_buyer, verifyOTP
+from .services import encodeOTP, get_seller, google_validation, sendEmail, user_get, user_get_all, user_get_me, jwt_login, user_delete, user_get_create, create_buyer, update_buyer, get_buyer, verifyOTP
 
 # Create your views here.
 
@@ -49,6 +49,20 @@ class UserAPI(APIView):
         data = request.GET['user_id']
         user_delete(user_id=data)
         return Response(status=status.HTTP_200_OK)
+
+class LogoutAPI(APIView):
+    authentication_classes=()
+    permission_classes=()
+    def post(self,request,*args,**kwargs):
+        data = request.data
+        user_id = request.headers['user-id']
+        if 'token' not in data:
+            raise ValueError("No token!")
+        token = data['token']
+        blacklisted = BlacklistedToken(token=token, user_id=user_get(user_id).id, expires_at=datetime.now())
+        blacklisted.save()
+        return Response({'message':"Token has been blacklisted",'success':True})
+
 
 class UsersAPI(APIView):
     @all_api
@@ -125,8 +139,10 @@ class BuyerAPI(APIView):
         return Response(data=new_data)
 
 class SellerAPI(APIView):
-    def post(self,request,*args,**kwargs):
-        pass
+    @seller_api
+    def get(self,request,*args,**kwargs):
+        user_id = request.GET['user_id']
+        return Response(data=get_seller(user_id=user_id))
 
 class OTPAPI(APIView):
     authentication_classes=()

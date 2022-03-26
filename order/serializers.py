@@ -12,11 +12,21 @@ from itertools import chain
 
 class OrderItemsSerializer(serializers.ModelSerializer):
     item_name = serializers.SerializerMethodField()
+    display_picture = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
 
     def get_item_name(self, obj):
         item_name = obj.shopitem_id.item_name
         return item_name
+
+    def get_display_picture(self, obj):
+        display_picture = obj.shopitem_id.display_picture
+        return display_picture
+
+    def get_description(self, obj):
+        description = obj.shopitem_id.description
+        return description
 
     def get_total_price(self, obj):
         total_price = obj.quantity * obj.shopitem_id.price
@@ -24,7 +34,7 @@ class OrderItemsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItems
-        fields = ['item_name', 'quantity', 'total_price']
+        fields = ['item_name', 'display_picture', 'description', 'quantity', 'total_price']
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -67,13 +77,10 @@ class ShopItemListSerializer(serializers.ModelSerializer):
 
     def get_sold(self, obj):
 
-        orders = Order.objects.filter(orderitems__shopitem_id=obj, paid=True)
-        print(list(orders))
+        orders = OrderItems.objects.filter(shopitem_id=obj, order_id__paid=True)
         sold = 0
         for order in orders:
-            sold += OrderItems.objects.get(
-                order_id=order, shopitem_id=obj).quantity
-        print(sold)
+            sold += order.quantity
         return sold
 
     def get_shop_item_id(self, obj):
@@ -205,8 +212,9 @@ class SellerOrderItemsSerializer(serializers.ModelSerializer):
 
 class SellerOrderSerializer(serializers.Serializer):
     buyer_name = serializers.SerializerMethodField()
-    order_items = SellerOrderItemsSerializer(
-        source="orderitems_set", many=True)
+    paid = serializers.SerializerMethodField()
+    order_items = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
 
     def get_buyer_name(self, obj):
         # order = OrderItems.objects.filter(list(orderitems_set.all())[
@@ -215,9 +223,39 @@ class SellerOrderSerializer(serializers.Serializer):
         buyer_name = Buyer.objects.get(user=user).name
         return buyer_name
 
+    def get_paid(self, obj):
+        return obj.paid
+
+    def get_order_items(self, obj):
+        shop_id = self.context.get("shop_id")
+        order_items = OrderItems.objects.filter(order_id=obj.id, shopitem_id__shop_id=shop_id)
+        order_dict = {}
+        orders = []
+        for order_item in order_items:
+            if order_item.shopitem_id.id in order_dict:
+                order_dict[order_item.shopitem_id.id] += order_item.quantity
+            else:
+                order_dict[order_item.shopitem_id.id] = order_item.quantity
+        for order_item in order_dict:
+            order_detail = ShopItem.objects.get(id=order_item)
+            orders.append({
+                "shop_item_name": order_detail.item_name,
+                "quantity": order_dict[order_item],
+                "total_price": order_detail.price * order_dict[order_item]
+            })
+        return orders
+
+    def get_total_price(self, obj):
+        shop_id = self.context.get("shop_id")
+        total_price = 0
+        order_items = OrderItems.objects.filter(order_id=obj.id, shopitem_id__shop_id=shop_id)
+        for order_item in order_items:
+            total_price += order_item.quantity * order_item.shopitem_id.price
+        return total_price
+
     class Meta:
         model = Order
-        fields = ['buyer_name', 'order_items']
+        fields = ['buyer_name', 'paid', 'order_items', 'total_price']
 
 
 class SellerDetailedShopOrderSerializer(serializers.ModelSerializer):
@@ -225,29 +263,41 @@ class SellerDetailedShopOrderSerializer(serializers.ModelSerializer):
     # orders = SellerOrderSerializer(
     #     source="shopitem_set", many=True)
     orders = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
 
     def get_shop_id(self, obj):
         return obj.id
+
+    def get_shop_name(self, obj):
+        return obj.shop_name
 
     def get_orders(self, obj):
         orderitemsset = []
         for shopitem in list(obj.shopitem_set.all()):
             orderitemsset = list(
                 chain(orderitemsset, shopitem.orderitems_set.all()))
-        print(orderitemsset)
         order_ids = []
         for i in orderitemsset:
             order_ids.append(i.order_id.id)
         u_order_ids = set(order_ids)
         referenced_orders = Order.objects.filter(
             id__in=u_order_ids)
+        shop_id = self.context.get("shop_id")
         sellerorderitems = SellerOrderSerializer(
-            referenced_orders, many=True)
+            referenced_orders, many=True, context={'shop_id':shop_id})
+        
         return sellerorderitems.data
+
+    def get_total_price(self, obj):
+        total_price = 0
+        for shopitem in list(obj.shopitem_set.all()):
+            for orderitem in list(shopitem.orderitems_set.all()):
+                total_price += orderitem.quantity * orderitem.shopitem_id.price
+        return total_price
 
     class Meta:
         model = Shop
-        fields = ['shop_id', "orders"]
+        fields = ['shop_id', "shop_name", "orders", "total_price"]
 
 
 # post, kurang paham
