@@ -9,6 +9,9 @@ from datetime import date
 
 
 class ShopsList(APIView):  # GET shops_api/shops/
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
+
     def get(self, request, format=None):
         user = User.objects.get(id=request.GET.get("user_id", ""))
         if user.user_type == "buyer":
@@ -18,18 +21,16 @@ class ShopsList(APIView):  # GET shops_api/shops/
         serializer = ShopsSerializer(shops, many=True)
 
         # Remove all closed shops
-        months_to_int = {"January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6,
-                         "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12}
+        # Date is in the form YYYY-MM-DDTHH:mm:ss.SSSZ
         today = date.today()
         data = serializer.data
         invalid_indices = []  # Closed shops indices
         for i, shop in enumerate(data):
-            open_date = shop["open_date"].split()  # [DD, Month, YYYY]
-            closed_date = shop["closed_date"].split()  # [DD, Month, YYYY]
-            open_date[1] = months_to_int[open_date[1]]
-            closed_date[1] = months_to_int[closed_date[1]]
-            open_date = list(map(int, open_date))[::-1]  # [YYYY, MM, DD]
-            closed_date = list(map(int, closed_date))[::-1]  # [YYYY, MM, DD]
+            open_date = shop["open_date"][:10].split("-")  # [DD, Month, YYYY]
+            closed_date = shop["closed_date"][:10].split(
+                "-")  # [DD, Month, YYYY]
+            open_date = list(map(int, open_date))  # [YYYY, MM, DD]
+            closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
             open_date = date(*open_date)
             closed_date = date(*closed_date)
             if not open_date <= today <= closed_date:
@@ -42,6 +43,9 @@ class ShopsList(APIView):  # GET shops_api/shops/
 
 
 class ShopDetails(APIView):  # GET, PUT, POST, DELETE shops_api/shops/<shop_id>
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
+
     def get(self, request, shop_id, format=None):
         shop = Shop.objects.get(id=shop_id)
         serializer = ShopSerializer(shop, many=False)
@@ -77,6 +81,9 @@ class ShopDetails(APIView):  # GET, PUT, POST, DELETE shops_api/shops/<shop_id>
 
 
 class ShopItemDetails(APIView):  # GET shops_api/shops/<shop_id>/<shop_item_id>/
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
+
     def get(self, request, shop_id, shop_item_id, format=None):
         shop = Shop.objects.get(id=shop_id)
         item = ShopItem.objects.get(id=shop_item_id, shop_id=shop_id)
