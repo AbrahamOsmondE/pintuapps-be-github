@@ -12,6 +12,10 @@ class ShopAdmin(admin.ModelAdmin):
     list_display = ("id", "shop_name", "shop_owner")
 
 
+class ShopAdmin(admin.ModelAdmin):
+    exclude = ("display_picture",)
+
+
 class ShopItemAdmin(admin.ModelAdmin):
     list_display = ("id", "shop_name", "original_quantity", "price")
 

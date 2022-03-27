@@ -26,9 +26,8 @@ class ShopsList(APIView):  # GET shops_api/shops/
         data = serializer.data
         invalid_indices = []  # Closed shops indices
         for i, shop in enumerate(data):
-            open_date = shop["open_date"][:10].split("-")  # [DD, Month, YYYY]
-            closed_date = shop["closed_date"][:10].split(
-                "-")  # [DD, Month, YYYY]
+            open_date = shop["open_date"][:10].split("-")
+            closed_date = shop["closed_date"][:10].split("-")
             open_date = list(map(int, open_date))  # [YYYY, MM, DD]
             closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
             open_date = date(*open_date)
@@ -48,8 +47,16 @@ class ShopDetails(APIView):  # GET, PUT, POST, DELETE shops_api/shops/<shop_id>
 
     def get(self, request, shop_id, format=None):
         shop = Shop.objects.get(id=shop_id)
-        serializer = ShopSerializer(shop, many=False)
-        return Response(serializer.data)
+        open_date = shop.open_date[:10].split("-")
+        closed_date = shop.closed_date[:10].split("-")
+        open_date = list(map(int, open_date))  # [YYYY, MM, DD]
+        closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
+        open_date = date(*open_date)
+        closed_date = date(*closed_date)
+        if open_date <= date.today() <= closed_date:
+            serializer = ShopSerializer(shop, many=False)
+            return Response(serializer.data)
+        return Response({})
 
     def put(self, request, shop_id, format=None):
         shop = Shop.objects.get(id=shop_id)
