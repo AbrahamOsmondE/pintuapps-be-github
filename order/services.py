@@ -49,7 +49,7 @@ def get_shop_order_items(user_id, order_id):
     shop = Shop.objects.filter(id=shopitem.shop_id.id).first()
     if not shop:
         raise ValueError("No shops found upon deletion!")
-    shop_items = OrderItems.objects.filter(order_id=order.id).distinct()
+    shop_items = OrderItems.objects.filter(order_id=order.id).distinct("shopitem_id")
     shop_customs_list = []
     shop_items_list = []
     shop_customs = ShopCustom.objects.filter(shop_id__id=shop.id)
@@ -60,6 +60,7 @@ def get_shop_order_items(user_id, order_id):
             "placeholder": shop_custom.placeholder,
             "options": shop_custom.options
         })
+
     for shop_item in shop_items:
         shop_items_objects = OrderItems.objects.filter(shopitem_id=shop_item.shopitem_id.id, order_id__from_user_id=user.id)
         shop_items_customs_list = []
