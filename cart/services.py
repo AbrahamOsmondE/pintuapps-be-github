@@ -66,7 +66,7 @@ def get_shop_cart_items(user_id, shop_id):
             shop_items_customs_quantity += shop_items_object.quantity
             for shop_items_custom in shop_items_customs:
                 shop_custom = ShopCustom.objects.filter(id=shop_items_custom.shop_custom_id.id).first()
-                if shop_custom.type == "user":
+                if shop_custom.type.lower() == "user":
                     try:
                         user_option = Buyer.objects.select_related('user').filter(user__id=int(shop_items_custom.value)).first()
                         if user_option:
@@ -138,16 +138,16 @@ def put_cart_items(user_id, shop_item_id, cart_item_id, quantity):
         cart_item.quantity = quantity
         cart_item.save()
     else:
-        cart_item = CartItem(user_id=user.user_id, shop_item_id=shop_item_id, quantity=quantity)
+        cart_item = CartItem(user_id=user, shop_item_id_id=shop_item_id, quantity=quantity)
         cart_item.save()
     return cart_item
 
 def put_cart_custom(cart_item_id, type, option):
-    cart_custom = CartCustom(cart_item_id=cart_item_id, type=type, option=option)
+    cart_custom = CartCustom(cart_item_id_id=cart_item_id, type=type, option=option)
     cart_custom.save()
 
 def delete_cart_custom(cart_item_id):
-    CartCustom.objects.filter(cart_item_id=cart_item_id).delete()
+    CartCustom.objects.filter(cart_item_id_id=cart_item_id).delete()
 
 def delete_cart_items(cart_item_id):
     cart_item = CartItem.objects.filter(id=cart_item_id).first()
@@ -159,4 +159,4 @@ def delete_shop_cart_items(shop_item_id, user_id):
     user = User.objects.filter(id=user_id).first()
     if not user:
         raise ValueError("No users found upon deletion!")
-    CartItem.objects.filter(shop_item_id=shop_item_id, user_id=user.id).delete()
+    CartItem.objects.filter(shop_item_id_id=shop_item_id, user_id=user).delete()
