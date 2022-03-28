@@ -95,6 +95,7 @@ def get_shop_cart_items(user_id, shop_id):
             "shop_item_id": item_detail.id,
             "quantity": shop_items_customs_quantity,
             "total_price": item_detail.price*shop_items_customs_quantity,
+            "original_price": item_detail.price,
             "display_picture": item_detail.display_picture,
             "cart_item": shop_items_customs_list
         }
@@ -132,7 +133,7 @@ def put_cart_items(user_id, shop_item_id, cart_item_id, quantity):
     user = User.objects.filter(id=user_id).first()
     if not user:
         raise ValueError("No users found upon deletion!")
-    cart_item = CartItem.objects.filter(cart_item_id=cart_item_id).first()
+    cart_item = CartItem.objects.filter(id=cart_item_id).first()
     if cart_item:
         cart_item.quantity = quantity
         cart_item.save()
