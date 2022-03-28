@@ -73,11 +73,18 @@ class ShopOrderSerializer(serializers.ModelSerializer):
 class ShopItemListSerializer(serializers.ModelSerializer):
     shop_item_id = serializers.SerializerMethodField()
     sold = serializers.SerializerMethodField()
+    paid = serializers.SerializerMethodField()
     quantity = serializers.SerializerMethodField()
 
+    def get_paid(self,obj):
+        orders = OrderItems.objects.filter(shopitem_id=obj, order_id__paid=True)
+        paid= 0
+        for order in orders:
+            paid += order.quantity
+        return paid
     def get_sold(self, obj):
 
-        orders = OrderItems.objects.filter(shopitem_id=obj, order_id__paid=True)
+        orders = OrderItems.objects.filter(shopitem_id=obj)
         sold = 0
         for order in orders:
             sold += order.quantity
@@ -96,7 +103,7 @@ class ShopItemListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopItem
         fields = ["shop_item_id", "item_name", "description",
-                  "price", "quantity", "sold", "display_picture"]
+                  "price", "quantity", "sold","paid", "display_picture"]
 
 
 class ShopSerializer(serializers.ModelSerializer):
