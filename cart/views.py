@@ -35,7 +35,7 @@ class CartItemsAPI(APIView):
                 cart_item = put_cart_items(user_id,item['shop_item_id'],item['cart_item_id'],1)
             delete_cart_custom(cart_item.id)
             for custom in item['cart_item_customs']:
-                post_cart_custom(cart_item.id,custom['type'],custom['option'])
+                post_cart_custom(cart_item.id,custom['shop_custom_id'],custom['value'])
         return Response(data=data)
 
 class SingleCartItemsAPI(APIView):
