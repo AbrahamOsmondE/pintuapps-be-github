@@ -8,5 +8,7 @@ urlpatterns = [
          views.BuyerOrder.as_view(), name="BuyerOrder"),
     path("order/seller/detailed/<str:shop_id>/",
          views.SellerDetailedShopOrder.as_view(), name="SellerDetailedShopOrder"),
-    path("order/", views.OrderList.as_view(), name="OrderList")
+    path("order/", views.OrderList.as_view(), name="OrderList"),
+    path("order/payment",views.OrderPayment.as_view(),name="OrderPayment"),
+    path("order/status",views.OrderPaymentStatus.as_view(),name="OrderPaymentStatus")
 ]

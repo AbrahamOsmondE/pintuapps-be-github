@@ -97,3 +97,15 @@ class ShopItemDetails(APIView):  # GET shops_api/shops/<shop_id>/<shop_item_id>/
         serializer = ShopItemSerializer(item, many=False)
 
         return Response(serializer.data)
+
+class ShopItemAPI(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
+    def put(self,request,shop_item_id,format=None):
+        data = request.data
+        shop_item = ShopItem.objects.get(id=shop_item_id)
+        shop_item.original_quantity = int(data["quantity"])
+        shop_item.save()
+        serializer = ShopItemSerializer(shop_item, many=False)
+        return Response(serializer.data)
+

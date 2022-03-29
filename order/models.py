@@ -7,9 +7,12 @@ from user.models import User
 
 class Order(models.Model):
     is_submitted = models.BooleanField()
-    paid = models.BooleanField()
+    paid = models.BooleanField(default=False)
     from_user_id = models.ForeignKey(
         User, on_delete=models.CASCADE, default="")
+    xanpay_id = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True)
 
     def __str__(self) -> str:
         return str(self.id)

@@ -25,7 +25,7 @@ class ShopItemSerializer(ModelSerializer):
     class Meta:
         model = ShopItem
         fields = ["id", "item_name", "description",
-                  "price", "quantity", "display_picture", "custom_fields"]
+                  "price", "original_quantity", "quantity", "display_picture", "custom_fields"]
 
     def get_quantity(self, obj):
         total = obj.original_quantity
@@ -40,7 +40,7 @@ class ShopItemsSerializer(ModelSerializer):
 
     class Meta:
         model = ShopItem
-        fields = ["id", "item_name", "description", "quantity",
+        fields = ["id", "item_name", "description", "original_quantity", "quantity",
                   "price", "display_picture"]
 
     def get_quantity(self, obj):
