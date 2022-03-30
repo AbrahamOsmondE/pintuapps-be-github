@@ -87,7 +87,14 @@ class OrderList(APIView):  # POST /order_api/order
             data=request.data, context={'request': data})
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+
+            serialized_data = serializer.data
+            order_id = serialized_data["id"]
+            serialized_data["order_id"] = serialized_data.pop("id")
+            serialized_data["shop_name"] = list(Order.objects.get(pk=order_id).orderitems_set.all())[0].shopitem_id.shop_id.shop_name
+            serialized_data["shop_id"] = list(Order.objects.get(pk=order_id).orderitems_set.all())[0].shopitem_id.shop_id.id
+            
+            return Response(serialized_data)
         return Response(serializer.errors)
 
 

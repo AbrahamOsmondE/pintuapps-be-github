@@ -318,20 +318,6 @@ class OrderItemsSerializer(serializers.ModelSerializer):
 class OrderListSerializer(serializers.ModelSerializer):
     orders = BuyerOrderItemsSerializer(
         source="orderitems_set", many=True, read_only=True)
-    # shop_name = serializers.SerializerMethodField()
-    # shop_id = serializers.SerializerMethodField()
-    # order_id = serializers.SerializerMethodField()
-
-    # def get_shop_name(self, obj):
-    #     name = list(obj.orderitems_set.all())[0].shop_item_id.shop_id.name
-    #     return name
-
-    # def get_shop_id(self, obj):
-    #     return obj.id
-
-    # def get_order_id(self, obj):
-    #     return obj.id
-    # from user id kalau ga exist to user id = from user id
 
     def create(self, validated_data):
         data = self.context["request"]
@@ -379,4 +365,15 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["orders"]
+        fields = ["id","orders"]
+    
+    # def get_shop_name(self, obj):
+    #     name = list(obj.orderitems_set.all())[0].shop_item_id.shop_id.name
+    #     return name
+
+    # def get_shop_id(self, obj):
+    #     return list(obj.orderitems_set.all())[0].shop_item_id.shop_id.id
+
+    # def get_order_id(self, obj):
+    #     return obj.id
+    # from user id kalau ga exist to user id = from user id
