@@ -101,7 +101,7 @@ class DeleteOrder(APIView):  # DELETE /order_api/order/<order_id>
 class OrderPayment(APIView):  # GET /order_api/order/buyer
     authentication_classes = ()  # delete
     permission_classes = ()  # delete
-    
+
     def get(self, request, format=None):
         XANPAY_URL = "https://api.sandbox.xanpay.com/checkout-link"
         order_id = request.GET.get('order_id', '')
@@ -117,7 +117,7 @@ class OrderPayment(APIView):  # GET /order_api/order/buyer
 
         response["paid"] = order.paid
         response["amount"] = amount
-        response["order_id"] = order.id
+        response["order_id"] = list(order.orderitems_set.all())[0].shopitem_id.shop_id.custom_order_id + str(order.id)
         response["shop_name"] = list(order.orderitems_set.all())[0].shopitem_id.shop_id.shop_name
 
         return Response(data=response)

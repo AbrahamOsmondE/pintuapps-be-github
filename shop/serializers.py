@@ -108,6 +108,7 @@ class ShopSerializer(ModelSerializer):
         instance.closed_date = data.get(
             "closed_date", instance.closed_date)
         instance.is_open = data.get("is_open", instance.is_open)
+        instance.custom_order_id = data.get("custom_order_id", instance.custom_order_id)
         instance.save()
 
         return instance
@@ -115,7 +116,7 @@ class ShopSerializer(ModelSerializer):
     class Meta:
         model = Shop
         fields = ["id", "shop_owner", "shop_name", "description",
-                  "open_date", "display_picture", "closed_date", "is_open", "custom_fields", "shop_items"]
+                  "open_date", "display_picture","custom_order_id","closed_date", "is_open", "custom_fields", "shop_items"]
 
 
 # GET shops_api/shops/<shop_id>/<shop_item_id>/

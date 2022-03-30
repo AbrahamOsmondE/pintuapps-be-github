@@ -12,6 +12,7 @@ class Shop(models.Model):
     display_picture = models.TextField()
     is_open = models.BooleanField()
     closed_date = models.CharField(max_length=50)
+    custom_order_id = models.TextField(default="")
 
     def __str__(self) -> str:
         return self.shop_name
