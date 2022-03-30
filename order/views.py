@@ -1,10 +1,11 @@
 from itertools import chain
 import os
+from django.http import HttpResponse
 from django.shortcuts import render
 from cart.models import CartCustom
 from .decorator import view_or_basicauth
 from shop.models import Shop
-from user.models import User
+from user.models import User, Seller, Buyer
 from .serializers import BuyerOrderSerializer, OrderCustomSerializer, OrderListSerializer, OrderSerializer, OrderItemsSerializer, OrderCustomSerializer, SellerDetailedShopOrderSerializer, SellerOrderSerializer, ShopItemListSerializer, ShopOrderSerializer, ShopSerializer
 from rest_framework.response import Response
 from .models import Order, OrderItems, OrderCustom
@@ -12,8 +13,9 @@ from rest_framework.views import APIView
 from rest_framework import status
 import requests, json
 from django.utils.decorators import method_decorator
-
+import collections
 from .services import *
+import csv
 # Create your views here.
 
 
@@ -176,3 +178,56 @@ class OrderPaymentStatus(APIView):  # GET /order_api/order/buyer
 
         data = {"paid":order.paid}
         return Response(data=data)
+
+class OrderPaymentExcel(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
+
+    def get(self,request,shop_id,format=None):
+        dictionary_package = collections.defaultdict(dict)
+        dictionary_total = collections.defaultdict(int)
+        shop = Shop.objects.get(id=shop_id)
+        for shopitem in list(shop.shopitem_set.all()):
+            for orderitem in list(shopitem.orderitems_set.all()):
+                order = orderitem.order_id
+                user = order.from_user_id
+
+                try:
+                    name = Buyer.objects.get(user=user).name
+                except:
+                    name = Seller.objects.get(user=user).name
+                
+                dictionary_package[name][shopitem.item_name] = dictionary_package.get(name,{}).get(shopitem.item_name,0)+orderitem.quantity
+                dictionary_total[name] = dictionary_total.get(name,0)+ orderitem.quantity * shopitem.price
+            
+        response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="somefilename.csv"'},
+    )
+
+        writer = csv.writer(response)
+        writer.writerow(['Name', 'Orders', 'Quantities', 'Total'])
+        
+        dictionary_package = dict(dictionary_package)
+        dictionary_total = dict(dictionary_total)
+
+        print(dictionary_package)
+        print(dictionary_total)
+        for name in dictionary_package:
+            order_col = []
+            quantities_col = []
+
+            for key,value in dictionary_package[name].items():
+                order_col.append(key)
+                quantities_col.append(str(value))
+
+            total = "$" + str(dictionary_total[name])
+            writer.writerow([name,"\n".join(order_col),"\n".join(quantities_col),total])
+        
+        return response
+
+            
+
+                
+
+        
