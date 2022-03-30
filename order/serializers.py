@@ -82,6 +82,7 @@ class ShopItemListSerializer(serializers.ModelSerializer):
         for order in orders:
             paid += order.quantity
         return paid
+        
     def get_sold(self, obj):
 
         orders = OrderItems.objects.filter(shopitem_id=obj)

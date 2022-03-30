@@ -31,6 +31,7 @@ def get_shop_items(user_id):
             shop_list = {
                 "shop_name": shop_detail.shop_name,
                 "order_id": order['order_id'],
+                "paid": Order.objects.filter(id=order['order_id']).first().paid,
                 "orders": shop_items_list
             }
             shops_list.append(shop_list)
@@ -60,7 +61,6 @@ def get_shop_order_items(user_id, order_id):
             "placeholder": shop_custom.placeholder,
             "options": shop_custom.options
         })
-
     for shop_item in shop_items:
         shop_items_objects = OrderItems.objects.filter(shopitem_id=shop_item.shopitem_id.id, order_id__from_user_id=user.id)
         shop_items_customs_list = []
@@ -101,6 +101,7 @@ def get_shop_order_items(user_id, order_id):
     shop_detail = Shop.objects.filter(id=shop.id).first()
     shop_list = {
         "shop_name": shop.shop_name,
+        "paid": order.paid,
         "shop_id": shop.id,
         "user_id": user.id,
         "custom_fields": shop_customs_list,
