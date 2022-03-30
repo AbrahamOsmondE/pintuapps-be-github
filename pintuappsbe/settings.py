@@ -121,6 +121,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
+AUTHENTICATION_BACKENDS = ['pintuappsbe.auth.EmailBackend']
+
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'

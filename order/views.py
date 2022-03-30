@@ -101,14 +101,7 @@ class DeleteOrder(APIView):  # DELETE /order_api/order/<order_id>
 class OrderPayment(APIView):  # GET /order_api/order/buyer
     authentication_classes = ()  # delete
     permission_classes = ()  # delete
-    def dispatch(self, *args, **kwargs):
-        dispatch_method = super(OrderPayment, self).dispatch
-
-        if self.request.method == 'POST':
-            dispatch_method = method_decorator(view_or_basicauth)(dispatch_method)
-
-        return dispatch_method(*args, **kwargs)
-
+    
     def get(self, request, format=None):
         XANPAY_URL = "https://api.sandbox.xanpay.com/checkout-link"
         order_id = request.GET.get('order_id', '')
@@ -127,41 +120,44 @@ class OrderPayment(APIView):  # GET /order_api/order/buyer
         response["order_id"] = order.id
         response["shop_name"] = list(order.orderitems_set.all())[0].shopitem_id.shop_id.shop_name
 
-        if order.paid:
-            response["checkoutLink"] = None
-            return Response(data=response)
-        api_key = os.getenv("XANPAY_KEY")
-        api_secret = os.getenv("XANPAY_SECRET")
-        data = {
-            "apiKey":api_key,
-            "currency":"SGD",
-            "amount":str(amount),
-            "orders":[{
-                "id": order_id,
-                "quantity":1,
-                "name":"PINTU App Purchase",
-                "amount": amount
-            }],
-            "paymentMethods":{
-                "SG": [
-                    "paynow"
-                ]
-            },
-            "customer":{
-                "email": user.email,}}
-        response["checkoutLink"] = requests.post(XANPAY_URL,json=data,auth=(api_key,api_secret)).json()["checkoutLink"]
-
         return Response(data=response)
-        
+        # if order.paid:
+        #     response["checkoutLink"] = None
+        #     return Response(data=response)
+
+        # api_key = os.getenv("XANPAY_KEY")
+        # api_secret = os.getenv("XANPAY_SECRET")
+        # data = {
+        #     "apiKey":api_key,
+        #     "currency":"SGD",
+        #     "amount":str(amount),
+        #     "orders":[{
+        #         "id": order_id,
+        #         "quantity":1,
+        #         "name":"PINTU App Purchase",
+        #         "amount": amount
+        #     }],
+        #     "paymentMethods":{
+        #         "SG": [
+        #             "paynow"
+        #         ]
+        #     },
+        #     "customer":{
+        #         "email": user.email,}}
+        # response["checkoutLink"] = requests.post(XANPAY_URL,json=data,auth=(api_key,api_secret)).json()["checkoutLink"]
+
+        # return Response(data=response)
+
+    @method_decorator(view_or_basicauth())
     def post(self, request, format=None):
         data = request.data
-        order_id = data["orders"][0].id
+        order_id = data["data"]["orders"][0]["id"]
         order = Order.objects.get(pk=order_id)
         if data["event"] == "charge_completed":
             order.paid = True
             order.xanpay_id = data["data"]["id"]
         order.save()
-        return
+        return Response(data=data)
 
 class OrderPaymentStatus(APIView):  # GET /order_api/order/buyer
     authentication_classes = ()  # delete
