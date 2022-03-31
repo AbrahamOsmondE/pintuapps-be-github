@@ -212,16 +212,19 @@ def get_details_worksheet(shop_id):
         worksheet2_headers[0].append(user_custom)
 
     worksheet2_list = []
-    no = 1
     for order_item in order_items:
-        temp = [no]
+        temp = []
         for col in worksheet2_headers[0]:
             if col == "No":
                 continue
             temp.append(order_items[order_item].get(col,"N/A"))
         worksheet2_list.append(temp[::])
-        no += 1
-    worksheet2_list.sort(key=lambda i: i[1])
+
+    worksheet2_list.sort(key=lambda i: i[0])
+
+    for i in range(len(worksheet2_list)):
+        worksheet2_list[i] = [i+1] + worksheet2_list[i]
+
     worksheet2_headers = worksheet2_headers + worksheet2_list
 
     return worksheet2_headers
