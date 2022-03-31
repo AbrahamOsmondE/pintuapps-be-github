@@ -71,28 +71,35 @@ class ShopSerializer(ModelSerializer):
         data = self.context["request"]
         newCustomFields = data.pop("custom_fields")
         newShopItems = data.pop("shop_items")
-        customFields = list(ShopCustom.objects.filter(shop_id=instance))
-        shopItems = list(ShopItem.objects.filter(shop_id=instance))
+        # customFields = list(ShopCustom.objects.filter(shop_id=instance))
+        # shopItems = list(ShopItem.objects.filter(shop_id=instance))
 
         # Delete the ShopCustom objects
-        for shopcustom in customFields:
-            shopcustom.delete()
+        # for shopcustom in customFields:
+        #     shopcustom.delete()
 
         # Create new ShopCustom objects
         for shopcustom in newCustomFields:
-            custom_fields = ShopCustom(
-                shop_id=instance, type=shopcustom["type"], placeholder=shopcustom["placeholder"], options=shopcustom["options"])
+            custom_fields = ShopCustom.objects.get(id=shopcustom["id"])
+            custom_fields.type = shopcustom["type"]
+            custom_fields.placeholder = shopcustom["placeholder"]
+            custom_fields.options = shopcustom["options"]
             custom_fields.save()
 
         # Delete the ShopItem objects
-        for shopitems in shopItems:
-            shopitems.delete()
+        # for shopitems in shopItems:
+        #     shopitems.delete()
 
         # Create new ShopItem objects
         for shopitems in newShopItems:
-            shop_items = ShopItem(shop_id=instance, item_name=shopitems["item_name"], description=shopitems["description"],
-                                  price=shopitems["price"], original_quantity=shopitems["original_quantity"], display_picture=shopitems.get("display_picture", ""))
-            shop_items.save()
+            shop_item = ShopItem.objects.get(id=shopitems["id"])
+            shop_item.item_name = shopitems["item_name"]
+            shop_item.description=shopitems["description"]
+            shop_item.price=shopitems["price"]
+            shop_item.original_quantity=shopitems["original_quantity"]
+            shop_item.display_picture=shopitems.get("display_picture", "")
+
+            shop_item.save()
 
         # Update the instance which is the Shop with the data
         instance.shop_owner = data.get(
