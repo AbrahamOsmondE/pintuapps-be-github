@@ -103,7 +103,8 @@ def get_shop_order_items(user_id, order_id):
     shop_list = {
         "shop_name": shop.shop_name,
         "paid": order.paid,
-        "custom_order_id": str(order_id) + str(shop.custom_order_id),
+        "order_id": str(order_id),
+        "custom_order_id":  str(shop.custom_order_id) + str(order_id),
         "shop_id": shop.id,
         "user_id": user.id,
         "custom_fields": shop_customs_list,
