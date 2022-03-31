@@ -192,7 +192,7 @@ def get_details_worksheet(shop_id):
                     order_items[orderitem.id]["Receiver's Phone No."] = buyer.contact_number
 
                 else:
-                    order_items[order.id][shopcustom.placeholder] = ordercustom.value
+                    order_items[orderitem.id][shopcustom.placeholder] = ordercustom.value
             
 
     worksheet2_headers = [["No","Buyer","Phone","Item Name"]]
