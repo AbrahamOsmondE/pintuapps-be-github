@@ -1,7 +1,7 @@
 from .models import Order, OrderItems, OrderCustom
-from user.models import User, Buyer
+from user.models import User, Buyer, Seller
 from shop.models import Shop, ShopItem, ShopCustom
-
+from collections import defaultdict
 def get_shop_items(user_id):
     user = User.objects.filter(id=user_id).first()
     if not user:
@@ -108,3 +108,120 @@ def get_shop_order_items(user_id, order_id):
         "orders": shop_items_list
     }
     return shop_list
+
+def get_summary_worksheet(shop_id):
+    shop = Shop.objects.get(id=shop_id)
+
+    orders = defaultdict(dict)
+    for shopitem in list(shop.shopitem_set.all()):
+        for orderitem in list(shopitem.orderitems_set.all()):
+            order = orderitem.order_id
+            user = order.from_user_id
+
+            try:
+                name = Buyer.objects.get(user=user).name
+                phone = Buyer.objects.get(user=user).contact_number
+
+            except:
+                name = Seller.objects.get(user=user).name
+                phone = Seller.objects.get(user=user).contact_number
+            
+            orders[order.id]["Buyer"] = name
+            orders[order.id]["Phone"] = phone
+            orders[order.id]["Total Payment"] = orders[order.id].get("total",0) + orderitem.quantity * shopitem.price
+            orders[order.id]["Payment Status"] = "Paid" if order.paid else "Awaiting Payment"
+            orders[order.id][shopitem.item_name] = orders[order.id].get(shopitem.item_name,0) + orderitem.quantity
+
+    worksheet1_headers = [["No","Buyer","Phone","Total Payment","Payment Status"]]
+    shopitems = set()
+    for shopitem in list(shop.shopitem_set.all()):
+        shopitems.add(shopitem.item_name)
+    
+    for shopitem in shopitems:
+        worksheet1_headers[0].append(shopitem)
+
+    worksheet1_list = []
+    no = 1
+    for order in orders:
+        temp = [no]
+        for col in worksheet1_headers[0]:
+            if col == "No":
+                continue
+            temp.append(orders[order].get(col,0))
+        worksheet1_list.append(temp[::])
+        no += 1
+
+    worksheet1_headers = worksheet1_headers + worksheet1_list
+
+    return worksheet1_headers
+
+def get_details_worksheet(shop_id):
+    shop = Shop.objects.get(id=shop_id)
+
+    order_items = defaultdict(dict)
+    for shopitem in list(shop.shopitem_set.all()):
+        for orderitem in list(shopitem.orderitems_set.all()):
+            order = orderitem.order_id
+            user = order.from_user_id
+
+            try:
+                name = Buyer.objects.get(user=user).name
+                phone = Buyer.objects.get(user=user).contact_number
+
+            except:
+                name = Seller.objects.get(user=user).name
+                phone = Seller.objects.get(user=user).contact_number
+            
+            order_items[orderitem.id]["Buyer"] = name
+            order_items[orderitem.id]["Phone"] = phone
+            order_items[orderitem.id]["Item Name"] = shopitem.item_name
+
+            for ordercustom in list(orderitem.ordercustom_set.all()):
+                shopcustom = ordercustom.shop_custom_id
+                if shopcustom.type.lower() == "user":
+                    receiver = User.objects.get(id=ordercustom.value)
+                    try:
+                        buyer = Buyer.objects.get(user=receiver)
+                    except:
+                        order_items[orderitem.id]["Receiver's Full Name"] = "Receiver not found"
+                        order_items[orderitem.id]["Receiver's Address"] = "Receiver not found"
+                        order_items[orderitem.id]["Receiver's Phone No."] = "Receiver not found"
+
+                    order_items[orderitem.id]["Receiver's Full Name"] = buyer.name
+                    order_items[orderitem.id]["Receiver's Address"] = buyer.address
+                    order_items[orderitem.id]["Receiver's Phone No."] = buyer.contact_number
+
+                else:
+                    order_items[order.id][shopcustom.placeholder] = ordercustom.value
+            
+
+    worksheet2_headers = [["No","Buyer","Phone","Item Name"]]
+    shopitem_customs = set()
+    user_customs = set()
+    for shop_custom in list(shop.shopcustom_set.all()):
+        if shop_custom.type.lower() == "user":
+            user_customs.add("Receiver's Full Name")
+            user_customs.add("Receiver's Address")
+            user_customs.add("Receiver's Phone No.")
+        else:
+            shopitem_customs.add(shop_custom.placeholder)
+    
+    for shop_custom in shopitem_customs:
+        worksheet2_headers[0].append(shop_custom)
+    for user_custom in user_customs:
+        worksheet2_headers[0].append(user_custom)
+
+    worksheet2_list = []
+    no = 1
+    for order_item in order_items:
+        temp = [no]
+        for col in worksheet2_headers[0]:
+            if col == "No":
+                continue
+            temp.append(order_items[order_item].get(col,"N/A"))
+        worksheet2_list.append(temp[::])
+        no += 1
+    worksheet2_list.sort(key=lambda i: i[1])
+    worksheet2_headers = worksheet2_headers + worksheet2_list
+
+    return worksheet2_headers

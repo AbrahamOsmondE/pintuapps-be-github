@@ -1,3 +1,5 @@
+from io import StringIO
+import io
 from itertools import chain
 import os
 from django.http import HttpResponse
@@ -13,9 +15,10 @@ from rest_framework.views import APIView
 from rest_framework import status
 import requests, json
 from django.utils.decorators import method_decorator
-import collections
+from collections import defaultdict
 from .services import *
 import csv
+import xlsxwriter
 # Create your views here.
 
 
@@ -184,48 +187,35 @@ class OrderPaymentExcel(APIView):
     permission_classes = ()  # delete
 
     def get(self,request,shop_id,format=None):
-        dictionary_package = collections.defaultdict(dict)
-        dictionary_total = collections.defaultdict(int)
         shop = Shop.objects.get(id=shop_id)
-        for shopitem in list(shop.shopitem_set.all()):
-            for orderitem in list(shopitem.orderitems_set.all()):
-                order = orderitem.order_id
-                user = order.from_user_id
+        shop_name = shop.shop_name
+        summary_worksheet = get_summary_worksheet(shop_id)
+        details_worksheet = get_details_worksheet(shop_id)
 
-                try:
-                    name = Buyer.objects.get(user=user).name
-                except:
-                    name = Seller.objects.get(user=user).name
-                
-                dictionary_package[name][shopitem.item_name] = dictionary_package.get(name,{}).get(shopitem.item_name,0)+orderitem.quantity
-                dictionary_total[name] = dictionary_total.get(name,0)+ orderitem.quantity * shopitem.price
-            
-        response = HttpResponse(
-        content_type='text/csv',
-        headers={'Content-Disposition': 'attachment; filename="somefilename.csv"'},
-    )
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output,{'in_memory': True})
 
-        writer = csv.writer(response)
-        writer.writerow(['Name', 'Orders', 'Quantities', 'Total'])
-        
-        dictionary_package = dict(dictionary_package)
-        dictionary_total = dict(dictionary_total)
+        summary = workbook.add_worksheet("Summary")
+        details = workbook.add_worksheet("Details")
 
-        print(dictionary_package)
-        print(dictionary_total)
-        for name in dictionary_package:
-            order_col = []
-            quantities_col = []
+        for row,data in enumerate(summary_worksheet):
+            for col,cell in enumerate(data):
+                summary.write(row, col, cell)
 
-            for key,value in dictionary_package[name].items():
-                order_col.append(key)
-                quantities_col.append(str(value))
+        for row,data in enumerate(details_worksheet):
+            for col,cell in enumerate(data):
+                details.write(row,col,cell)
+    
+        workbook.close()
 
-            total = "$" + str(dictionary_total[name])
-            writer.writerow([name,"\n".join(order_col),"\n".join(quantities_col),total])
-        
+        #for more info https://xlsxwriter.readthedocs.io/example_http_server.html
+        output.seek(0)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment;filename="{} Orders.xlsx"'.format(shop_name)
+        response.write(output.read())
+
         return response
-
             
 
                 
