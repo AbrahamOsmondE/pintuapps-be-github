@@ -126,13 +126,14 @@ def get_summary_worksheet(shop_id):
                 name = Seller.objects.get(user=user).name
                 phone = Seller.objects.get(user=user).contact_number
             
+            orders[order.id]["Order ID"] = order.id
             orders[order.id]["Buyer"] = name
             orders[order.id]["Phone"] = phone
             orders[order.id]["Total Payment"] = orders[order.id].get("Total Payment",0) + orderitem.quantity * shopitem.price
             orders[order.id]["Payment Status"] = "Paid" if order.paid else "Awaiting Payment"
             orders[order.id][shopitem.item_name] = orders[order.id].get(shopitem.item_name,0) + orderitem.quantity
 
-    worksheet1_headers = [["No","Buyer","Phone","Total Payment","Payment Status"]]
+    worksheet1_headers = [["No","Order ID","Buyer","Phone","Total Payment","Payment Status"]]
     shopitems = set()
     for shopitem in list(shop.shopitem_set.all()):
         shopitems.add(shopitem.item_name)
@@ -172,6 +173,7 @@ def get_details_worksheet(shop_id):
                 name = Seller.objects.get(user=user).name
                 phone = Seller.objects.get(user=user).contact_number
             
+            order_items[orderitem.id]["Order ID"] = order.id
             order_items[orderitem.id]["Buyer"] = name
             order_items[orderitem.id]["Phone"] = phone
             order_items[orderitem.id]["Item Name"] = shopitem.item_name
@@ -195,7 +197,7 @@ def get_details_worksheet(shop_id):
                     order_items[orderitem.id][shopcustom.placeholder] = ordercustom.value
             
 
-    worksheet2_headers = [["No","Buyer","Phone","Item Name"]]
+    worksheet2_headers = [["No","Order ID","Buyer","Phone","Item Name"]]
     shopitem_customs = set()
     user_customs = set()
     for shop_custom in list(shop.shopcustom_set.all()):
