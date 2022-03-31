@@ -186,6 +186,7 @@ class OrderPaymentStatus(APIView):  # GET /order_api/order/buyer
         data = request.data
         order_id = data["order_id"]
         user_id = data["user_id"]
+        paid = True if "paid" not in data else data["paid"]
         
         order = Order.objects.get(pk=order_id)
 
@@ -197,7 +198,7 @@ class OrderPaymentStatus(APIView):  # GET /order_api/order/buyer
         shop_owner_id = order_items[0].shopitem_id.shop_id.shop_owner_id.id
 
         if int(shop_owner_id) == int(user_id):
-            order.paid = True
+            order.paid = paid
             order.save()
         else:
             raise ValueError("Incorrect Seller ID")
