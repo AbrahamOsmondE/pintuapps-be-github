@@ -222,6 +222,7 @@ class SellerOrderSerializer(serializers.Serializer):
     buyer_name = serializers.SerializerMethodField()
     paid = serializers.SerializerMethodField()
     custom_order_id = serializers.SerializerMethodField()
+    order_id = serializers.SerializerMethodField()
     order_items = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
 
@@ -232,12 +233,18 @@ class SellerOrderSerializer(serializers.Serializer):
         buyer_name = Buyer.objects.get(user=user).name
         return buyer_name
 
+    def get_order_id(self,obj):
+        return obj.id
+        
     def get_custom_order_id(self,obj):
         shop_id = self.context.get("shop_id")
-        order_id = obj.id
+        order_id = str(obj.id)
         shop_custom_order = Shop.objects.get(pk=shop_id).custom_order_id
 
-        return shop_custom_order + str(order_id)
+        if len(order_id) < 3:
+            order_id = "0"*(3-len(order_id)) + order_id
+
+        return shop_custom_order + order_id
     def get_paid(self, obj):
         return obj.paid
 

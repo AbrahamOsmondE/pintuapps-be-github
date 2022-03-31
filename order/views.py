@@ -127,9 +127,14 @@ class OrderPayment(APIView):  # GET /order_api/order/buyer
         for order_item in order.orderitems_set.all():
             amount += order_item.quantity*order_item.shopitem_id.price
 
+        order_id = str(order.id)
+
+        if len(order_id) < 3:
+            order_id = "0"*(3-len(order_id)) + order_id
+
         response["paid"] = order.paid
         response["amount"] = amount
-        response["order_id"] = list(order.orderitems_set.all())[0].shopitem_id.shop_id.custom_order_id + str(order.id)
+        response["order_id"] = list(order.orderitems_set.all())[0].shopitem_id.shop_id.custom_order_id + order_id
         response["shop_name"] = list(order.orderitems_set.all())[0].shopitem_id.shop_id.shop_name
 
         return Response(data=response)
