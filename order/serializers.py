@@ -96,9 +96,9 @@ class ShopItemListSerializer(serializers.ModelSerializer):
 
     def get_quantity(self, obj):
         total = obj.original_quantity
-        orders = OrderItems.objects.filter(shopitem_id=obj.id)
-        for order in orders.values():
-            total -= order["quantity"]
+        # orders = OrderItems.objects.filter(shopitem_id=obj.id)
+        # for order in orders.values():
+        #     total -= order["quantity"]
         return total
 
     class Meta:
