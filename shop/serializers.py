@@ -80,13 +80,13 @@ class ShopSerializer(ModelSerializer):
             existing_shop_customs.add(int(shopcustom.id))
 
         for shopcustom in newCustomFields:
-            if shopcustom.id in existing_shop_customs:
+            if shopcustom["id"] in existing_shop_customs:
                 custom_fields = ShopCustom.objects.get(id=shopcustom["id"])
                 custom_fields.type = shopcustom["type"]
                 custom_fields.placeholder = shopcustom["placeholder"]
                 custom_fields.options = shopcustom["options"]
                 custom_fields.save()
-                existing_shop_customs.remove(shopcustom.id)
+                existing_shop_customs.remove(shopcustom["id"])
             else:
                 custom_fields = ShopCustom(shop_id=instance, type=shopcustom["type"], placeholder=shopcustom["placeholder"], options=shopcustom["options"])
                 custom_fields.save()
@@ -95,7 +95,7 @@ class ShopSerializer(ModelSerializer):
             existing_shop_items.add(int(shopitems.id))
 
         for shopitems in newShopItems:
-            if shopitems.id in existing_shop_items:
+            if shopitems["id"] in existing_shop_items:
                 shop_item = ShopItem.objects.get(id=shopitems["id"])
                 shop_item.item_name = shopitems["item_name"]
                 shop_item.description=shopitems["description"]
@@ -103,7 +103,7 @@ class ShopSerializer(ModelSerializer):
                 shop_item.original_quantity=shopitems["original_quantity"]
                 shop_item.display_picture=shopitems.get("display_picture", "")
                 shop_item.save()
-                existing_shop_items.remove(shopitems.id)
+                existing_shop_items.remove(shopitems["id"])
             else:
                 shop_item = ShopItem(shop_id=instance, item_name=shopitems["item_name"], description=shopitems["description"],
                                   price=shopitems["price"], original_quantity=shopitems["original_quantity"], display_picture=shopitems.get("display_picture", ""))

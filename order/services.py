@@ -31,6 +31,7 @@ def get_shop_items(user_id):
             shop_list = {
                 "shop_name": shop_detail.shop_name,
                 "order_id": order['order_id'],
+                "custom_order_id": str(order['order_id']) + str(shop_detail.custom_order_id),
                 "paid": Order.objects.filter(id=order['order_id']).first().paid,
                 "orders": shop_items_list
             }
@@ -102,6 +103,7 @@ def get_shop_order_items(user_id, order_id):
     shop_list = {
         "shop_name": shop.shop_name,
         "paid": order.paid,
+        "custom_order_id": str(order_id) + str(shop.custom_order_id),
         "shop_id": shop.id,
         "user_id": user.id,
         "custom_fields": shop_customs_list,
