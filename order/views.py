@@ -182,6 +182,29 @@ class OrderPaymentStatus(APIView):  # GET /order_api/order/buyer
         data = {"paid":order.paid}
         return Response(data=data)
 
+    def put(self,request):
+        data = request.data
+        order_id = data["order_id"]
+        user_id = data["user_id"]
+        
+        order = Order.objects.get(pk=order_id)
+
+        order_items = list(order.orderitems_set.all())
+
+        if len(order_items) == 0:
+            raise ValueError("Invalid Order")
+
+        shop_owner_id = order_items[0].shopitem_id.shop_id.shop_owner_id.id
+
+        if int(shop_owner_id) == int(user_id):
+            order.paid = True
+            order.save()
+        else:
+            raise ValueError("Incorrect Seller ID")
+        
+        data = {"paid":order.paid}
+        return Response(data=data)
+
 class OrderPaymentExcel(APIView):
     authentication_classes = ()  # delete
     permission_classes = ()  # delete
@@ -216,8 +239,3 @@ class OrderPaymentExcel(APIView):
         response.write(output.read())
 
         return response
-            
-
-                
-
-        
