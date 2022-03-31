@@ -62,7 +62,7 @@ def get_shop_order_items(user_id, order_id):
             "options": shop_custom.options
         })
     for shop_item in shop_items:
-        shop_items_objects = OrderItems.objects.filter(shopitem_id=shop_item.shopitem_id.id, order_id__from_user_id=user.id)
+        shop_items_objects = OrderItems.objects.filter(shopitem_id=shop_item.shopitem_id.id, order_id__from_user_id=user.id,order_id=order)
         shop_items_customs_list = []
         shop_items_customs_quantity = 0
         for shop_items_object in shop_items_objects:
