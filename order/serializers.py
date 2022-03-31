@@ -113,7 +113,7 @@ class ShopSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Shop
-        fields = ["shop_items"]
+        fields = ["shop_name","shop_items"]
 
 
 # BuyerOrder
