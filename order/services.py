@@ -128,7 +128,7 @@ def get_summary_worksheet(shop_id):
             
             orders[order.id]["Buyer"] = name
             orders[order.id]["Phone"] = phone
-            orders[order.id]["Total Payment"] = orders[order.id].get("total",0) + orderitem.quantity * shopitem.price
+            orders[order.id]["Total Payment"] = orders[order.id].get("Total Payment",0) + orderitem.quantity * shopitem.price
             orders[order.id]["Payment Status"] = "Paid" if order.paid else "Awaiting Payment"
             orders[order.id][shopitem.item_name] = orders[order.id].get(shopitem.item_name,0) + orderitem.quantity
 
