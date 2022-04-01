@@ -38,7 +38,7 @@ class ShopsList(APIView):
 
         # If the user is a seller, return all shops owned by the user
         else:
-            shops = Shop.objects.filter(shop_owner_id=user, is_open=True)
+            shops = Shop.objects.filter(shop_owner_id=user)
             serializer = ShopsSerializer(shops, many=True)
             data = serializer.data
         return Response({"shops": data})
