@@ -20,9 +20,12 @@ def download_csv(modeladmin, request, queryset):
         writer.writerow([name, address, contact, item_name, s.quantity])
     return response
 
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ('user_name', 'is_submitted', 'paid')
+def update_status(modeladmin,request,queryset):
+    queryset.update(paid=True)
 
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id','user_name', 'is_submitted', 'paid')
+    actions = [update_status]
     def user_name(self, obj):
         name = Buyer.objects.get(user=obj.from_user_id).name
         return name
