@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 
 from user.models import Buyer
-import csv
+
 from .models import Order, OrderCustom, OrderItems
 def download_csv(modeladmin, request, queryset):
     import csv
