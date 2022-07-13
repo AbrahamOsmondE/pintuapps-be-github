@@ -96,9 +96,9 @@ class ShopItemListSerializer(serializers.ModelSerializer):
 
     def get_quantity(self, obj):
         total = obj.original_quantity
-        orders = OrderItems.objects.filter(shopitem_id=obj.id)
-        for order in orders.values():
-            total -= order["quantity"]
+        # orders = OrderItems.objects.filter(shopitem_id=obj.id)
+        # for order in orders.values():
+        #     total -= order["quantity"]
         return total
 
     class Meta:
@@ -342,9 +342,10 @@ class OrderListSerializer(serializers.ModelSerializer):
         for shopitem in list(shop.shopitem_set.all()):
             cartitemset = list(
                 chain(cartitemset, shopitem.cartitem_set.all().filter(user_id=user)))
-        cartitemids = []
+        cartitemids, shopitemids = [], []
         for i in cartitemset:
             cartitemids.append(i.id)
+            shopitemids.append(i.shop_item_id.id)
         if len(cartitemids) == 0:
             return data
         order = Order.objects.create(
@@ -352,13 +353,30 @@ class OrderListSerializer(serializers.ModelSerializer):
         # print(order.orderitems_set.all())
         validated_data['order_id'] = order.id
         unique_cartitemids = set(cartitemids)
+        unique_shopitemids = set(shopitemids)
         # print(unique_cartitemids)
+        if not shop.is_open:
+            error = {"message": "Shop is closed"}
+            raise serializers.ValidationError(error)
+        # TO-DO: check quantity
+        for shopitemid in unique_shopitemids: # need to test
+            orders = OrderItems.objects.filter(shopitem_id=shopitemid)
+            sold, ordered = 0, 0
+            for orderq in orders:
+                sold += orderq.quantity
+            original_quantity = ShopItem.objects.get(id=shopitemid).original_quantity
+            for cartitemid in unique_cartitemids:
+                cart = CartItem.objects.get(id=cartitemid)
+                if cart.shop_item_id.id == shopitemid:
+                    ordered += cart.quantity
+            if sold + ordered > original_quantity:
+                shopitem = ShopItem.objects.get(id=shopitemid)
+                error = {"message": "There are only " + str(original_quantity-sold) + " " + str(shopitem.item_name) + " left"}
+                raise serializers.ValidationError(error)
         for id in unique_cartitemids:
             cart = CartItem.objects.get(id=id)
             shopitem_id = cart.shop_item_id
             qty = cart.quantity
-            # if cart
-            # to_user_id =
             to_user_id = user
 
             for cart_custom in list(cart.cartcustom_set.all()):

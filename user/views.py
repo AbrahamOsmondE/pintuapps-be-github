@@ -2,10 +2,10 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_jwt.blacklist.models import BlacklistedToken
-from rest_framework_jwt.utils import check_payload
 from rest_framework import serializers
 
-import time
+import pyotp
+
 from datetime import datetime
 
 from .decorators import admin_api, all_api, buyer_api, seller_api
@@ -46,7 +46,8 @@ class UserAPI(APIView):
     
     @admin_api
     def delete(self,request,*args,**kwargs):
-        data = request.GET['user_id']
+        # data = request.GET['user_id']
+        data = request.user.id
         user_delete(user_id=data)
         return Response(status=status.HTTP_200_OK)
 
@@ -73,12 +74,14 @@ class UsersAPI(APIView):
 class BuyerAPI(APIView):
     @buyer_api
     def get(self,request,*args,**kwargs):
-        user_id = request.GET['user_id']
+        # user_id = request.GET['user_id']
+        user_id = request.user.id
         return Response(data=get_buyer(user_id=user_id))
 
     @buyer_api
     def put(self,request,*args,**kwargs):
-        user_id = request.headers['user-id']
+        # user_id = request.headers['user-id']
+        user_id = request.user.id
         data = request.data
         if not user_id:
             raise ValueError("No user_id!")
@@ -108,7 +111,8 @@ class BuyerAPI(APIView):
 
     @all_api
     def post(self,request,*args,**kwargs):
-        user_id = request.headers['user-id']
+        # user_id = request.headers['user-id']
+        user_id = request.user.id
         data = request.data
         if not user_id:
             raise ValueError("No user_id!")
@@ -141,20 +145,23 @@ class BuyerAPI(APIView):
 class SellerAPI(APIView):
     @seller_api
     def get(self,request,*args,**kwargs):
-        user_id = request.GET['user_id']
+        # user_id = request.GET['user_id']
+        user_id = request.user.id
         return Response(data=get_seller(user_id=user_id))
 
 class OTPAPI(APIView):
-    authentication_classes=()
-    permission_classes=()
+    @all_api
     def post(self,request,*args,**kwargs):
-        data = request.data
-        if(verifyOTP(data['otp'],data['email'])):
+        user = request.user
+        otp = request.data['otp']
+        if not otp:
+            raise ValueError("No otp!")
+        if(verifyOTP(user, otp)):
             return Response({"verified":True})
         return Response({"verified":False})
-
+    @all_api
     def get(self,request,*args,**kwargs):
         data = request.GET['email']
-        otp=encodeOTP(data).at(0)
-        sent=sendEmail(otp,data)
+        otp = encodeOTP(request.user)
+        sent = sendEmail(otp,data)
         return Response({"sent":sent})

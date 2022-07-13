@@ -5,7 +5,7 @@ from rest_framework_jwt.views import refresh_jwt_token
 
 
 urlpatterns = [
-    path("auth/logout/", BlacklistView.as_view({"post": "create"})),
+    # path("auth/logout/", BlacklistView.as_view({"post": "create"})),
     path("logout/", views.LogoutAPI.as_view(), name="logout"),
     path("api-token-refresh/", refresh_jwt_token),
     path('user/seller/',views.SellerAPI.as_view(), name="seller"),

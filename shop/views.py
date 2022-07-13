@@ -4,12 +4,26 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import date
 
+# Function to know if a shop is open or not
+
+
+def is_open(shop):
+    today = date.today()
+    # Date is in the form YYYY-MM-DDTHH:mm:ss.SSSZ
+    open_date = shop["open_date"][:10].split("-")
+    closed_date = shop["closed_date"][:10].split("-")
+    open_date = list(map(int, open_date))  # [YYYY, MM, DD]
+    closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
+    open_date = date(*open_date)
+    closed_date = date(*closed_date)
+    if open_date <= today <= closed_date:
+        return True
+    else:
+        return False
+
 
 # GET shops_api/shops/
 class ShopsList(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, format=None):
         user = User.objects.get(id=request.GET.get("user_id", ""))
 
@@ -19,18 +33,10 @@ class ShopsList(APIView):
             serializer = ShopsSerializer(shops, many=True)
 
             # Remove all closed shops.
-            # Date is in the form YYYY-MM-DDTHH:mm:ss.SSSZ
-            today = date.today()
             data = serializer.data
             invalid_indices = []  # Closed shops indices.
             for i, shop in enumerate(data):
-                open_date = shop["open_date"][:10].split("-")
-                closed_date = shop["closed_date"][:10].split("-")
-                open_date = list(map(int, open_date))  # [YYYY, MM, DD]
-                closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
-                open_date = date(*open_date)
-                closed_date = date(*closed_date)
-                if not open_date <= today <= closed_date:
+                if not is_open(shop):
                     invalid_indices.append(i)
             invalid_indices = invalid_indices[::-1]
             for i in invalid_indices:
@@ -46,22 +52,13 @@ class ShopsList(APIView):
 
 # GET, PUT, POST, DELETE shops_api/shops/<shop_id>
 class ShopDetails(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, shop_id, format=None):
         user = User.objects.get(id=request.GET.get("user_id", ""))
         shop = Shop.objects.get(id=shop_id)
 
         # If the user is a buyer, return the shop if it is open.
         if user.user_type == "buyer":
-            open_date = shop.open_date[:10].split("-")
-            closed_date = shop.closed_date[:10].split("-")
-            open_date = list(map(int, open_date))  # [YYYY, MM, DD]
-            closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
-            open_date = date(*open_date)
-            closed_date = date(*closed_date)
-            if open_date <= date.today() <= closed_date:
+            if is_open(shop):
                 serializer = ShopSerializer(shop, many=False)
                 return Response(serializer.data)
             return Response({})
@@ -105,23 +102,18 @@ class ShopDetails(APIView):
 
 # GET shops_api/shops/<shop_id>/<shop_item_id>/
 class ShopItemDetails(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, shop_id, shop_item_id, format=None):
         item = ShopItem.objects.get(id=shop_item_id, shop_id=shop_id)
         serializer = ShopItemSerializer(item, many=False)
 
         return Response(serializer.data)
 
+
 class ShopItemAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-    def put(self,request,shop_item_id,format=None):
+    def put(self, request, shop_item_id, format=None):
         data = request.data
         shop_item = ShopItem.objects.get(id=shop_item_id)
         shop_item.original_quantity = int(data["quantity"])
         shop_item.save()
         serializer = ShopItemSerializer(shop_item, many=False)
         return Response(serializer.data)
-

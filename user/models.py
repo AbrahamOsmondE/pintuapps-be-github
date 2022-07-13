@@ -40,6 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     google_id = models.CharField(max_length=50, unique=True, default="google_id")
     secret_key = models.CharField(max_length=255, default=get_random_secret_key)
+    secret_otp = models.CharField(max_length=255, default="secret_otp")
     user_type = models.CharField(max_length=15,choices=TYPE,default="not_registered")
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

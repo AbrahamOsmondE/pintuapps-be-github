@@ -3,14 +3,14 @@ from django.http import HttpResponse
 import requests
 from .models import User, Buyer, Seller
 from rest_framework_jwt.settings import api_settings
-from rest_framework_jwt.compat import set_cookie_with_token
 import datetime
-import base64
 import pyotp
-from django.core.mail import EmailMessage, message
+from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
 GOOGLE_TOKEN_INFO_URL = 'https://www.googleapis.com/oauth2/v3/tokeninfo'
+
+INTERVAL_OTP = 10
 
 def google_validation(access_token):
     response = requests.get(
@@ -180,18 +180,20 @@ def get_seller(user_id):
 def create_seller(user,data):
     pass
 
-def encodeOTP(email):
-    key = base64.b32encode(email.encode())
-    otp = pyotp.HOTP(key)
+def encodeOTP(user):
+    secret_otp = pyotp.random_base32()
+    user.secret_otp = secret_otp
+    user.save()
+    totp = pyotp.TOTP(user.secret_otp, interval=INTERVAL_OTP)
+    otp = totp.now()
     return otp
 
-def verifyOTP(otp, email):
-    checkOTP = encodeOTP(email)
-    return checkOTP.verify(otp,0)
+def verifyOTP(user, otp):
+    totp = pyotp.TOTP(user.secret_otp, interval=INTERVAL_OTP)
+    return totp.verify(otp)
 
 def sendEmail(otp,email):
     check = email.split("@")
-    print(check)
     if(check[1]!='ntu.edu.sg' and check[1]!='e.ntu.edu.sg'):
         raise ValueError("Not an NTU Email account!")
     mail_subject = "PINTU App OTP Verification Code"
