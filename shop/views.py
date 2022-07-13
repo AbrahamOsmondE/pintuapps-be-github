@@ -24,6 +24,8 @@ def is_open(shop):
 
 # GET shops_api/shops/
 class ShopsList(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     def get(self, request, format=None):
         user = User.objects.get(id=request.GET.get("user_id", ""))
 
@@ -52,6 +54,8 @@ class ShopsList(APIView):
 
 # GET, PUT, POST, DELETE shops_api/shops/<shop_id>
 class ShopDetails(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     def get(self, request, shop_id, format=None):
         user = User.objects.get(id=request.GET.get("user_id", ""))
         shop = Shop.objects.get(id=shop_id)
@@ -102,6 +106,8 @@ class ShopDetails(APIView):
 
 # GET shops_api/shops/<shop_id>/<shop_item_id>/
 class ShopItemDetails(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     def get(self, request, shop_id, shop_item_id, format=None):
         item = ShopItem.objects.get(id=shop_item_id, shop_id=shop_id)
         serializer = ShopItemSerializer(item, many=False)
@@ -110,6 +116,8 @@ class ShopItemDetails(APIView):
 
 
 class ShopItemAPI(APIView):
+    authentication_classes = ()  # delete
+    permission_classes = ()  # delete
     def put(self, request, shop_item_id, format=None):
         data = request.data
         shop_item = ShopItem.objects.get(id=shop_item_id)
