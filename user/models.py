@@ -62,8 +62,8 @@ class Buyer(models.Model):
     address=models.TextField()
     origin_city=models.CharField(max_length=100)
     company=models.CharField(max_length=200)
-    emergency_name=models.CharField(max_length=100)
-    emergency_contact=models.CharField(max_length=30)
+    emergency_name=models.CharField(max_length=100, default="")
+    emergency_contact=models.CharField(max_length=30, default="")
 
 class Seller(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE, primary_key=True)
