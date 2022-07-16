@@ -89,7 +89,7 @@ def user_get_all():
 def create_buyer(user,data):
     user.user_type="buyer"
     user.save()
-    buyer = Buyer(user=user,name=data['name'],ntu_email=data['ntu_email'], contact_number=data['contact_number'], gender=data['gender'], birth_date=data['birth_date'], course=data['course'], graduation_year=data['graduation_year'], address=data['address'], origin_city=data['origin_city'], company=data['company'])
+    buyer = Buyer(user=user,name=data['name'],ntu_email=data['ntu_email'], contact_number=data['contact_number'], gender=data['gender'], birth_date=data['birth_date'], course=data['course'], graduation_year=data['graduation_year'], address=data['address'], origin_city=data['origin_city'], company=data['company'], emergency_name=data['emergency_name'], emergency_contact=data['emergency_contact'])
     buyer.save()
     find = Buyer.objects.get(user=user)
     if not find:
@@ -107,7 +107,9 @@ def create_buyer(user,data):
         "graduation_year": buyer.graduation_year,
         "address": buyer.address,
         "origin_city": buyer.origin_city,
-        "company": buyer.company
+        "company": buyer.company,
+        "emergency_name": buyer.emergency_name,
+        "emergency_contact": buyer.emergency_contact
     }
     return data, True
 
@@ -123,6 +125,8 @@ def update_buyer(user,data):
     buyer.address = data['address']
     buyer.origin_city = data['origin_city']
     buyer.company = data['company']
+    buyer.emergency_contact = data['emergency_contact']
+    buyer.emergency_name = data['emergency_name']
     buyer.save()
     data = {
         "user_id": buyer.user.id,
@@ -137,7 +141,9 @@ def update_buyer(user,data):
         "graduation_year": buyer.graduation_year,
         "address": buyer.address,
         "origin_city": buyer.origin_city,
-        "company": buyer.company
+        "company": buyer.company,
+        "emergency_contact": buyer.emergency_contact,
+        "emergency_name": buyer.emergency_name
     }
     return data
 
@@ -158,7 +164,9 @@ def get_buyer(user_id):
         "graduation_year": buyer.graduation_year,
         "address": buyer.address,
         "origin_city": buyer.origin_city,
-        "company": buyer.company
+        "company": buyer.company,
+        "emergency_contact": buyer.emergency_contact,
+        "emergency_name": buyer.emergency_name
     }
     return data
 

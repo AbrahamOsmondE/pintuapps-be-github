@@ -66,16 +66,12 @@ class LogoutAPI(APIView):
 
 
 class UsersAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     @all_api
     def get(self,request,*args,**kwargs):
         response={"users":user_get_all()}
         return Response(data=response)
 
 class BuyerAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     @buyer_api
     def get(self,request,*args,**kwargs):
         # user_id = request.GET['user_id']
@@ -109,6 +105,10 @@ class BuyerAPI(APIView):
             raise ValueError("No origin city!")
         if "company" not in data:
             raise ValueError("No company!")
+        if "emergency_contact" not in data:
+            raise ValueError("No emergency contact!")
+        if "emergency_name" not in data:
+            raise ValueError("No emergency name")
         user = user_get(user_id=user_id)
         new_data = update_buyer(user,data)
         return Response(data=new_data)
@@ -140,6 +140,10 @@ class BuyerAPI(APIView):
             raise ValueError("No origin city!")
         if "company" not in data:
             raise ValueError("No company!")
+        if "emergency_contact" not in data:
+            raise ValueError("No emergency contact!")
+        if "emergency_name" not in data:
+            raise ValueError("No emergency name")
         user = user_get(user_id=user_id)
         new_data,status = create_buyer(user,data)
         if not status:
@@ -147,8 +151,6 @@ class BuyerAPI(APIView):
         return Response(data=new_data)
 
 class SellerAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     @seller_api
     def get(self,request,*args,**kwargs):
         # user_id = request.GET['user_id']
@@ -156,8 +158,6 @@ class SellerAPI(APIView):
         return Response(data=get_seller(user_id=user_id))
 
 class OTPAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     @all_api
     def post(self,request,*args,**kwargs):
         user = request.user
