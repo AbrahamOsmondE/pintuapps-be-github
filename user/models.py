@@ -62,7 +62,7 @@ class Buyer(models.Model):
     address=models.TextField()
     origin_city=models.CharField(max_length=100)
     company=models.CharField(max_length=200)
-    emergency_name=models.charField(max_length=100)
+    emergency_name=models.CharField(max_length=100)
     emergency_contact=models.CharField(max_length=30)
 
 class Seller(models.Model):
