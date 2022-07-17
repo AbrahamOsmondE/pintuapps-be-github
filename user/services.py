@@ -10,7 +10,7 @@ from django.template.loader import render_to_string
 
 GOOGLE_TOKEN_INFO_URL = 'https://www.googleapis.com/oauth2/v3/tokeninfo'
 
-INTERVAL_OTP = 10
+INTERVAL_OTP = 600
 
 def google_validation(access_token):
     response = requests.get(
