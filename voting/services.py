@@ -20,9 +20,9 @@ def get_vote_results():
 def encrypt_vote_id(vote_id, user):
     id = vote_id
     id = str(id).encode("utf-8")
+    if not user.voting_secret_key:
+        key = Fernet.generate_key()
+        user.voting_secret_key = key.decode("utf-8")
+        user.save()
 
-    key = user.voting_secret_key
-    f = Fernet(key)
-
-    id = f.encrypt(id)
-    return id
+    return user.voting_secret_key

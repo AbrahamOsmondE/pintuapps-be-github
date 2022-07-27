@@ -2,6 +2,7 @@ from .services import encrypt_vote_id
 import xlsxwriter
 from .services import get_vote_results
 from voting.models import Candidate, Voted, Ballot
+from user.models import User
 import io
 from django.http import HttpResponse
 from rest_framework.views import APIView
@@ -73,25 +74,33 @@ class VoteAPI(APIView):
         return Response(data={"voted": vote})
 
     def post(self, request):
-        user = request.user
-        vote = Voted.objects.create(user=user)
-        id = encrypt_vote_id(vote.id, user)
-        candidate_id = request.data["candidate_id"]
-        candidate = Candidate.objects.get(id=candidate_id)
-        _ = Ballot.object.create(id=id, candidate=candidate)
-        return Response(data={"voted": True})
+        user_id = request.data["user_id"]
+        user = User.objects.get(id=user_id)
+        if user.voting_verified and not Voted.objects.filter(user=user).exists():
+            id = encrypt_vote_id(user.id, user)
+            candidate_id = request.data["candidate_id"]
+            candidate = Candidate.objects.get(id=candidate_id)
+
+            _ = Ballot.objects.create(id=id, candidate=candidate)
+            vote = Voted.objects.create(user=user)
+
+            return Response(data={"voted": Voted.objects.filter(user=user).exists()})
+        else:
+            return Response(data={"error": "You are not authorized to vote"})
 
 
 class VoteDetailsAPI(APIView):
     authentication_classes = ()  # delete
     permission_classes = ()  # delete
     def delete(self, request, id):
-        if request.user.is_staff:
-            user = request.user
+        user_id = request.GET["user_id"]
+        user = User.objects.get(id=user_id)
+        if user.is_staff:
             vote = Voted.objects.get(user=user)
-            vote.delete()
-            id = encrypt_vote_id(vote.id, user)
+            id = encrypt_vote_id(user.id, user)
             ballot = Ballot.objects.get(id=id)
+
+            vote.delete()
             ballot.delete()
             return Response(data={"voted": False})
         else:
