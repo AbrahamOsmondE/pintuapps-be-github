@@ -10,8 +10,8 @@ from datetime import date
 def is_open(shop):
     today = date.today()
     # Date is in the form YYYY-MM-DDTHH:mm:ss.SSSZ
-    open_date = shop["open_date"][:10].split("-")
-    closed_date = shop["closed_date"][:10].split("-")
+    open_date = shop.open_date[:10].split("-")
+    closed_date = shop.closed_date[:10].split("-")
     open_date = list(map(int, open_date))  # [YYYY, MM, DD]
     closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
     open_date = date(*open_date)
