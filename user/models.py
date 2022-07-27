@@ -44,6 +44,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_type = models.CharField(max_length=15,choices=TYPE,default="not_registered")
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    voting_verified = models.BooleanField(default=False)
+    voting_secret_key = models.CharField(max_length=255, blank=True)
 
     objects = CustomUserManager()
 

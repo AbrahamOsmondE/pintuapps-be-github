@@ -7,11 +7,25 @@ from datetime import date
 # Function to know if a shop is open or not
 
 
-def is_open(shop):
+def is_open_obj(shop):
     today = date.today()
     # Date is in the form YYYY-MM-DDTHH:mm:ss.SSSZ
     open_date = shop.open_date[:10].split("-")
     closed_date = shop.closed_date[:10].split("-")
+    open_date = list(map(int, open_date))  # [YYYY, MM, DD]
+    closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
+    open_date = date(*open_date)
+    closed_date = date(*closed_date)
+    if open_date <= today <= closed_date:
+        return True
+    else:
+        return False
+
+def is_open_json(shop):
+    today = date.today()
+    # Date is in the form YYYY-MM-DDTHH:mm:ss.SSSZ
+    open_date = shop["open_date"][:10].split("-")
+    closed_date = shop["closed_date"][:10].split("-")
     open_date = list(map(int, open_date))  # [YYYY, MM, DD]
     closed_date = list(map(int, closed_date))  # [YYYY, MM, DD]
     open_date = date(*open_date)
@@ -38,7 +52,7 @@ class ShopsList(APIView):
             data = serializer.data
             invalid_indices = []  # Closed shops indices.
             for i, shop in enumerate(data):
-                if not is_open(shop):
+                if not is_open_json(shop):
                     invalid_indices.append(i)
             invalid_indices = invalid_indices[::-1]
             for i in invalid_indices:
@@ -62,7 +76,7 @@ class ShopDetails(APIView):
 
         # If the user is a buyer, return the shop if it is open.
         if user.user_type == "buyer":
-            if is_open(shop):
+            if is_open_obj(shop):
                 serializer = ShopSerializer(shop, many=False)
                 return Response(serializer.data)
             return Response({})

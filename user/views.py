@@ -4,8 +4,6 @@ from rest_framework.response import Response
 from rest_framework_jwt.blacklist.models import BlacklistedToken
 from rest_framework import serializers
 
-import pyotp
-
 from datetime import datetime
 
 from .decorators import admin_api, all_api, buyer_api, seller_api
@@ -43,7 +41,7 @@ class UserAPI(APIView):
         }
         response = Response(data=data_response)
         return response
-    
+
     @admin_api
     def delete(self,request,*args,**kwargs):
         # data = request.GET['user_id']
@@ -66,7 +64,6 @@ class LogoutAPI(APIView):
 
 
 class UsersAPI(APIView):
-    @all_api
     def get(self,request,*args,**kwargs):
         response={"users":user_get_all()}
         return Response(data=response)

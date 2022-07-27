@@ -22,4 +22,5 @@ urlpatterns = [
     path('order_api/', include('order.urls')),
     path('user_api/', include('user.urls')),
     path('cart_api/', include('cart.urls')),
+    path('vote_api/', include('voting.urls'))
 ]
