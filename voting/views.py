@@ -2,7 +2,6 @@ from .services import encrypt_vote_id
 import xlsxwriter
 from .services import get_vote_results
 from voting.models import Candidate, Voted, Ballot
-from user.models import User
 import io
 from django.http import HttpResponse
 from rest_framework.views import APIView
@@ -13,8 +12,6 @@ from rest_framework.response import Response
 
 
 class VerificationAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     def get(self, request, *args, **kwargs):
         data = request.user
         response = {"verified": data.voting_verified}
@@ -28,9 +25,6 @@ class VerificationAPI(APIView):
 
 
 class VoteResultAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
-
     def get(self, request, *args, **kwargs):
         vote_details = get_vote_results()
         output = io.BytesIO()
@@ -51,8 +45,6 @@ class VoteResultAPI(APIView):
 
 
 class CandidateAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     def get(self, request, *args, **kwargs):
         candidates = Candidate.objects.all()
         response = []
@@ -63,8 +55,6 @@ class CandidateAPI(APIView):
 
 
 class VoteAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     def get(self, request, *args, **kwargs):
         data = request.user
         if Voted.objects.filter(user=data):
@@ -74,34 +64,30 @@ class VoteAPI(APIView):
         return Response(data={"voted": vote})
 
     def post(self, request):
-        user_id = request.data["user_id"]
-        user = User.objects.get(id=user_id)
+        user = request.user
         if user.voting_verified and not Voted.objects.filter(user=user).exists():
             id = encrypt_vote_id(user.id, user)
             candidate_id = request.data["candidate_id"]
             candidate = Candidate.objects.get(id=candidate_id)
 
-            _ = Ballot.objects.create(id=id, candidate=candidate)
+            _ = Ballot.object.create(id=id, candidate=candidate)
             vote = Voted.objects.create(user=user)
-
-            return Response(data={"voted": Voted.objects.filter(user=user).exists()})
+            return Response(data={"voted": True})
         else:
             return Response(data={"error": "You are not authorized to vote"})
 
 
 class VoteDetailsAPI(APIView):
-    authentication_classes = ()  # delete
-    permission_classes = ()  # delete
     def delete(self, request, id):
-        user_id = request.GET["user_id"]
-        user = User.objects.get(id=user_id)
-        if user.is_staff:
+        if request.user.is_staff and Voted.objects.filter(user=request.user).exists():
+            user = request.user
             vote = Voted.objects.get(user=user)
+
             id = encrypt_vote_id(user.id, user)
             ballot = Ballot.objects.get(id=id)
 
-            vote.delete()
             ballot.delete()
+            vote.delete()
             return Response(data={"voted": False})
         else:
             return Response(data={"error": "You are not authorized to delete this vote"})
